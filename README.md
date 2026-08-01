@@ -10,6 +10,7 @@ CodexとClaude Codeで再利用するスキルを管理するリポジトリで�
 | スキル | 概要 | 必要な環境 | エントリーポイント |
 |---|---|---|---|
 | `commit-message` | Git変更と規約を確認し、承認されたファイルをstageして、チケットID付きの日本語メッセージを作成します。確定したstage差分とメッセージへの明示許可後だけコミットします。 | Git | [Codex](.agents/skills/commit-message/SKILL.md) / [Claude Code](.claude/skills/commit-message/SKILL.md) |
+| `figma-variable-extract` | Figma DesignファイルのVariableを公式Remote MCPで抽出し、完全生成またはローカル限定生成の完全性を検証してCSS Design Tokensを生成します。raw JSONとreport JSONは同じプロジェクト内へ一時保存し、CSS生成成功後に削除します。 | Figma公式Remote MCP、Node.js 22以上 | [Codex](.agents/skills/figma-variable-extract/SKILL.md) / [Claude Code](.claude/skills/figma-variable-extract/SKILL.md) |
 
 ## スキルを追加するとき
 
@@ -21,7 +22,13 @@ CodexとClaude Codeで再利用するスキルを管理するリポジトリで�
 ## 開発時の検証
 
 `.agents/skills/`を正本とし、`.claude/skills/`は直接編集しません。
-GitHub Actionsでは、Codex用とClaude Code用の同期差分を検証します。
+`figma-variable-extract`を変更した後は、回帰テストを実行します。
+
+```bash
+node .agents/skills/figma-variable-extract/scripts/test-figma-variable-extract.mjs
+```
+
+GitHub Actionsでは、Codex用とClaude Code用の同期差分と回帰テストを検証します。
 
 ## コミット直前の必須確認
 

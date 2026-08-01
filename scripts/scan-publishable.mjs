@@ -38,7 +38,7 @@ function run(command, args, options = {}) {
 }
 
 const temporaryRoot = await mkdtemp(
-  path.join(os.tmpdir(), "agent-skills-publish-scan-")
+  path.join(os.tmpdir(), "figma-token-publish-scan-")
 );
 try {
   const temporaryRepository = path.join(temporaryRoot, "repository");

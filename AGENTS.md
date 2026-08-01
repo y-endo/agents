@@ -34,6 +34,14 @@ git switch -c feature/<issue-number>-<short-summary>
 見出し構成、手順、禁止事項、例を英語版と日本語版で対応させ、片方を変更したときは両方を更新する。
 英語版と日本語版に意味の差分がある場合は、`SKILL.md`を優先する。
 
+## 変更後の検証
+
+`figma-variable-extract`を変更した後は、次の回帰テストを実行する。
+
+```bash
+node .agents/skills/figma-variable-extract/scripts/test-figma-variable-extract.mjs
+```
+
 ## コミット直前の必須確認
 
 すべてのコミットについて、コミットする直前にリポジトリルートから次の2コマンドをこの順序で実行する。

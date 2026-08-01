@@ -13,3 +13,4 @@ jobs:
         with:
           node-version: 24
       - run: node scripts/sync-skills.mjs --check
+      - run: node .agents/skills/figma-variable-extract/scripts/test-figma-variable-extract.mjs
