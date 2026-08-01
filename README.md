@@ -7,11 +7,13 @@ CodexとClaude Codeで再利用するスキルを管理するリポジトリで�
 
 ## スキル一覧
 
-現在、登録されているスキルはありません。
+| スキル | 概要 | 必要な環境 | エントリーポイント |
+|---|---|---|---|
+| `commit-message` | Git変更と規約を確認し、承認されたファイルをstageして、チケットID付きの日本語メッセージを作成します。確定したstage差分とメッセージへの明示許可後だけコミットします。 | Git | [Codex](.agents/skills/commit-message/SKILL.md) / [Claude Code](.claude/skills/commit-message/SKILL.md) |
 
 ## スキルを追加するとき
 
-1. `.agents/skills/<skill-name>/SKILL.md`と必要なリソースを追加する。
+1. 英語の`.agents/skills/<skill-name>/SKILL.md`、内容確認用の`SKILL.ja.md`、必要なリソースを追加する。
 2. `node scripts/sync-skills.mjs`を実行し、Claude Code用コピーを生成する。`agents/openai.yaml`は自動的に除外される。
 3. このREADMEのスキル一覧へ要約、必要な環境、エントリーポイントを追加する。
 4. スキル形式の検証、同梱Scriptの実行確認、秘密情報スキャンを行う。

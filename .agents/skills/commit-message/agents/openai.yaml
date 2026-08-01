@@ -1,0 +1,4 @@
+interface:
+  display_name: "コミットメッセージ作成"
+  short_description: "明示許可後だけコミットする日本語のチケットID付きメッセージを作成"
+  default_prompt: "$commit-messageを使って、Git変更を確認し、承認したファイルだけをstageして、チケットID付きの日本語メッセージを提示してください。確定したstage差分とメッセージに私が別途明示許可した場合だけコミットしてください。"
