@@ -1,0 +1,4 @@
+interface:
+  display_name: "Figma Variable Extract"
+  short_description: "Figma Variablesを抽出してCSSトークンを生成"
+  default_prompt: "Use $figma-variable-extract to extract Variables from this Figma Design file and generate validated CSS design tokens."

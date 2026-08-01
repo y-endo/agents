@@ -1,0 +1,73 @@
+{
+  "inputDirectory": "src/design-tokens/raw",
+  "outputCss": "src/design-tokens/generated/design-tokens.css",
+  "outputReport": "src/design-tokens/generated/design-tokens.report.json",
+  "selectors": {
+    "default": ":root",
+    "modes": {
+      "Light": ":root",
+      "Default": ":root",
+      "Value": ":root",
+      "Dark": "[data-theme=\"dark\"]",
+      "High Contrast": "[data-theme=\"high-contrast\"]"
+    },
+    "unknownModeStrategy": "attribute"
+  },
+  "naming": {
+    "preferWebCodeSyntax": true,
+    "includeLibraryName": false,
+    "includeCollectionName": true,
+    "prefix": ""
+  },
+  "float": {
+    "unknownUnit": "error",
+    "nameRules": [
+      {
+        "pattern": "(^|/)(opacity|alpha|font[-_/ ]?weight)($|/)",
+        "unit": ""
+      },
+      {
+        "pattern": "(^|/)(spacing|space|gap|radius|width|height|size|font[-_/ ]?size|line[-_/ ]?height|letter[-_/ ]?spacing|paragraph[-_/ ]?(spacing|indent)|stroke[-_/ ]?width)($|/)",
+        "unit": "px"
+      }
+    ],
+    "scopeRules": [
+      {
+        "scopes": [
+          "OPACITY",
+          "FONT_WEIGHT"
+        ],
+        "unit": ""
+      },
+      {
+        "scopes": [
+          "CORNER_RADIUS",
+          "WIDTH_HEIGHT",
+          "GAP",
+          "STROKE_FLOAT",
+          "EFFECT_FLOAT",
+          "FONT_SIZE",
+          "LINE_HEIGHT",
+          "LETTER_SPACING",
+          "PARAGRAPH_SPACING",
+          "PARAGRAPH_INDENT"
+        ],
+        "unit": "px"
+      }
+    ]
+  },
+  "aliases": {
+    "unresolved": "error"
+  },
+  "validation": {
+    "requireInventory": true,
+    "requireCompleteLibraryBatches": true,
+    "requirePayloadChecksum": true,
+    "extractionErrors": "error"
+  },
+  "emit": {
+    "comments": true,
+    "strings": true,
+    "booleans": true
+  }
+}
