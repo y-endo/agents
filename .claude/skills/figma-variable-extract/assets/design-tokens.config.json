@@ -2,6 +2,12 @@
   "inputDirectory": "src/design-tokens/raw",
   "outputCss": "src/design-tokens/generated/design-tokens.css",
   "outputReport": "src/design-tokens/generated/design-tokens.report.json",
+  "extraction": {
+    "maxBatchSize": 200,
+    "maxInventoryPayloadBytes": 12000,
+    "maxPlanPayloadBytes": 18000,
+    "maxPayloadBytes": 12000
+  },
   "selectors": {
     "default": ":root",
     "modes": {

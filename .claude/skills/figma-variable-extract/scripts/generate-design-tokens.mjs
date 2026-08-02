@@ -145,6 +145,7 @@ function validateConfig(raw) {
         }
     }
     assertObject(raw.selectors, "config.selectors");
+    assertObject(raw.extraction, "config.extraction");
     assertObject(raw.naming, "config.naming");
     assertObject(raw.float, "config.float");
     assertObject(raw.aliases, "config.aliases");
@@ -153,28 +154,293 @@ function validateConfig(raw) {
     if (typeof raw.validation.requirePayloadChecksum !== "boolean") {
         throw new Error("config.validation.requirePayloadChecksum must be a boolean");
     }
+    if (!Number.isInteger(raw.extraction.maxBatchSize) ||
+        raw.extraction.maxBatchSize < 1 ||
+        raw.extraction.maxBatchSize > 200) {
+        throw new Error("config.extraction.maxBatchSize must be an integer from 1 through 200");
+    }
+    if (!Number.isInteger(raw.extraction.maxPayloadBytes) ||
+        raw.extraction.maxPayloadBytes < 1000 ||
+        raw.extraction.maxPayloadBytes > 100000) {
+        throw new Error("config.extraction.maxPayloadBytes must be an integer from 1000 through 100000");
+    }
+    for (const field of ["maxInventoryPayloadBytes", "maxPlanPayloadBytes"]) {
+        if (!Number.isInteger(raw.extraction[field]) ||
+            raw.extraction[field] < 1000 ||
+            raw.extraction[field] > 100000) {
+            throw new Error(`config.extraction.${field} must be an integer from 1000 through 100000`);
+        }
+    }
     return raw;
 }
 function isExportFile(value) {
     if (!value || typeof value !== "object" || Array.isArray(value))
         return false;
     const candidate = value;
-    return (candidate.schemaVersion === 1 &&
+    return (candidate.schemaVersion === 2 &&
         candidate.kind === "figma-variable-export" &&
         !!candidate.source &&
         Array.isArray(candidate.collections));
+}
+function isExportPlanFile(value) {
+    if (!value || typeof value !== "object" || Array.isArray(value))
+        return false;
+    const candidate = value;
+    return (candidate.schemaVersion === 2 &&
+        candidate.kind === "figma-variable-export-plan" &&
+        !!candidate.source &&
+        Array.isArray(candidate.groups) &&
+        Array.isArray(candidate.variableIds));
 }
 function isInventoryFile(value) {
     if (!value || typeof value !== "object" || Array.isArray(value))
         return false;
     const candidate = value;
-    return (candidate.schemaVersion === 1 &&
+    return (candidate.schemaVersion === 2 &&
         candidate.kind === "figma-variable-inventory" &&
         !!candidate.local &&
         Array.isArray(candidate.libraryCollections));
 }
+function isPageListFile(value) {
+    if (!value || typeof value !== "object" || Array.isArray(value))
+        return false;
+    const candidate = value;
+    return (candidate.schemaVersion === 2 &&
+        candidate.kind === "figma-variable-page-list" &&
+        Array.isArray(candidate.pages));
+}
+function isPageScanFile(value) {
+    if (!value || typeof value !== "object" || Array.isArray(value))
+        return false;
+    const candidate = value;
+    return (candidate.schemaVersion === 2 &&
+        candidate.kind === "figma-variable-page-scan" &&
+        !!candidate.page &&
+        Array.isArray(candidate.directVariableIds));
+}
 function collectionIdentity(sourceType, libraryName, key) {
     return `${sourceType}::${libraryName ?? ""}::${key}`;
+}
+function usageIdentityChecksum(collections) {
+    const identities = collections
+        .flatMap((collection) => collection.variables.map((variable) => ({
+        id: variable.id,
+        key: variable.key,
+        collectionKey: collection.key,
+    })))
+        .sort((a, b) => a.key.localeCompare(b.key) || a.id.localeCompare(b.id));
+    return checksumPayload(identities);
+}
+function validateVariableIdPlan(variableIds, expectedChecksum, expectedCount, label) {
+    if (!Array.isArray(variableIds)) {
+        throw new Error(`${label}.variableIds must be an array`);
+    }
+    const uniqueIds = new Set();
+    for (const variableId of variableIds) {
+        if (typeof variableId !== "string" ||
+            variableId.length === 0 ||
+            uniqueIds.has(variableId)) {
+            throw new Error(`${label}.variableIds contains an invalid or duplicate ID`);
+        }
+        uniqueIds.add(variableId);
+    }
+    if (variableIds.length !== expectedCount ||
+        typeof expectedChecksum !== "string" ||
+        checksumPayload(variableIds) !== expectedChecksum) {
+        throw new Error(`${label} Export plan is inconsistent`);
+    }
+    return variableIds;
+}
+function collectVariableAliases(value, destination) {
+    if (!value || typeof value !== "object")
+        return;
+    if (value.type === "VARIABLE_ALIAS" &&
+        typeof value.id === "string" &&
+        value.id.length > 0) {
+        destination.add(value.id);
+        return;
+    }
+    if (Array.isArray(value)) {
+        for (const entry of value)
+            collectVariableAliases(entry, destination);
+        return;
+    }
+    for (const entry of Object.values(value))
+        collectVariableAliases(entry, destination);
+}
+function exportedVariablesById(collections) {
+    const byId = new Map();
+    for (const collection of collections) {
+        for (const variable of collection.variables) {
+            if (byId.has(variable.id)) {
+                throw new Error(`Variable ID ${variable.id} appears more than once after batch merge`);
+            }
+            byId.set(variable.id, variable);
+        }
+    }
+    return byId;
+}
+function validateExportPlan(config, planFiles, inventory, directVariableIds, localOnly) {
+    if (!inventory)
+        throw new Error("inventory.json is required to validate the Export plan");
+    if (planFiles.length === 0) {
+        if (!localOnly)
+            throw new Error("No figma-variable-export-plan JSON files were found");
+        const variableIds = validateVariableIdPlan(inventory.local.variableIds, inventory.local.variableIdsChecksum, inventory.local.variableCount, "inventory.local");
+        if (checksumPayload(directVariableIds) !== inventory.usage.directVariableIdsChecksum ||
+            directVariableIds.length !== inventory.usage.directVariableCount) {
+            throw new Error("Page evidence does not match the Inventory direct-ID manifest");
+        }
+        return {
+            variableIds,
+            groups: [{
+                    type: "local",
+                    startIndex: 0,
+                    variableCount: inventory.local.variableCount,
+                    variableIdsChecksum: inventory.local.variableIdsChecksum,
+                    usageChecksum: inventory.local.usageChecksum,
+            }],
+            batchCount: 0,
+            source: "inventory",
+        };
+    }
+    const expectedScope = localOnly ? "local-only" : "complete";
+    const batches = [...planFiles].sort((a, b) => a.data.pagination.startIndex - b.data.pagination.startIndex);
+    let expectedStart = 0;
+    let expectedTotal = null;
+    let expectedPlanChecksum = null;
+    let expectedGroups = null;
+    const variableIds = [];
+    for (const { filePath, data } of batches) {
+        const relativePath = path.relative(process.cwd(), filePath);
+        assertObject(data.source, `${relativePath}.source`);
+        assertObject(data.pagination, `${relativePath}.pagination`);
+        if (data.source.fileKey !== inventory.fileKey ||
+            data.source.fileName !== inventory.fileName ||
+            data.source.scope !== expectedScope ||
+            data.source.directVariableIdsChecksum !== inventory.usage.directVariableIdsChecksum ||
+            data.source.usageChecksum !== inventory.usage.checksum ||
+            data.source.resolvedVariableIdsChecksum !== inventory.usage.resolvedVariableIdsChecksum) {
+            throw new Error(`Export plan source does not match Inventory in ${relativePath}`);
+        }
+        if (data.pagination.startIndex !== expectedStart ||
+            data.pagination.batchSize !== config.extraction.maxBatchSize ||
+            data.pagination.maxPayloadBytes !== config.extraction.maxPlanPayloadBytes ||
+            data.pagination.returnedCount !== data.variableIds.length ||
+            data.pagination.nextStartIndex !== data.pagination.startIndex + data.variableIds.length ||
+            data.pagination.batchIdentityChecksum !== checksumPayload(data.variableIds)) {
+            throw new Error(`Invalid Export-plan pagination in ${relativePath}`);
+        }
+        if (Buffer.byteLength(JSON.stringify(data), "utf8") > config.extraction.maxPlanPayloadBytes) {
+            throw new Error(`Export-plan payload exceeds the configured byte limit in ${relativePath}`);
+        }
+        if (expectedTotal === null) {
+            expectedTotal = data.pagination.total;
+            expectedPlanChecksum = data.source.planChecksum;
+            expectedGroups = data.groups;
+        }
+        if (data.pagination.total !== expectedTotal ||
+            data.source.planChecksum !== expectedPlanChecksum ||
+            JSON.stringify(data.groups) !== JSON.stringify(expectedGroups)) {
+            throw new Error("Export-plan batches do not share one stable manifest");
+        }
+        variableIds.push(...validateVariableIdPlan(data.variableIds, data.pagination.batchIdentityChecksum, data.variableIds.length, relativePath));
+        expectedStart = data.pagination.nextStartIndex;
+    }
+    const last = batches.at(-1).data.pagination;
+    if (last.hasMore || expectedStart !== expectedTotal ||
+        checksumPayload(variableIds) !== expectedPlanChecksum ||
+        new Set(variableIds).size !== variableIds.length) {
+        throw new Error("Export plan is incomplete or inconsistent");
+    }
+    const expectedVariableCount = localOnly
+        ? inventory.local.variableCount
+        : inventory.usage.resolvedVariableCount;
+    if (variableIds.length !== expectedVariableCount) {
+        throw new Error("Export-plan count does not match Inventory");
+    }
+    const groups = expectedGroups ?? [];
+    const expectedGroupCount = 1 + (localOnly ? 0 : inventory.libraryCollections.length);
+    if (groups.length !== expectedGroupCount) {
+        throw new Error("Export-plan group count does not match Inventory");
+    }
+    let groupStart = 0;
+    for (const [index, group] of groups.entries()) {
+        assertObject(group, `Export-plan groups[${index}]`);
+        const expected = index === 0 ? inventory.local : inventory.libraryCollections[index - 1];
+        const expectedType = index === 0 ? "local" : "library";
+        if (group.type !== expectedType ||
+            group.startIndex !== groupStart ||
+            group.variableCount !== expected.variableCount ||
+            group.variableIdsChecksum !== expected.variableIdsChecksum ||
+            group.usageChecksum !== expected.usageChecksum ||
+            (index > 0 && (group.key !== expected.key ||
+                (group.libraryName ?? "") !== (expected.libraryName ?? "")))) {
+            throw new Error(`Export-plan group ${index} does not match Inventory`);
+        }
+        const groupIds = variableIds.slice(group.startIndex, group.startIndex + group.variableCount);
+        if (checksumPayload(groupIds) !== group.variableIdsChecksum) {
+            throw new Error(`Export-plan group ${index} ID checksum mismatch`);
+        }
+        groupStart += group.variableCount;
+    }
+    if (groupStart !== variableIds.length)
+        throw new Error("Export-plan groups do not cover the selected plan");
+    if (!localOnly && checksumPayload([...variableIds].sort()) !== inventory.usage.resolvedVariableIdsChecksum) {
+        throw new Error("Complete Export plan does not cover the resolved usage set");
+    }
+    if (checksumPayload(directVariableIds) !== inventory.usage.directVariableIdsChecksum ||
+        directVariableIds.length !== inventory.usage.directVariableCount) {
+        throw new Error("Page evidence does not match the Inventory direct-ID manifest");
+    }
+    if (!localOnly) {
+        const planSet = new Set(variableIds);
+        if (directVariableIds.some((id) => !planSet.has(id)))
+            throw new Error("Complete Export plan omits a direct Variable ID");
+    }
+    return { variableIds, groups, batchCount: batches.length, source: "mcp" };
+}
+function validateExportedAliasClosure(collections, exportPlan, directVariableIds, localOnly) {
+    const expectedIds = exportPlan.variableIds;
+    const expectedSet = new Set(expectedIds);
+    const byId = exportedVariablesById(collections);
+    const exportedIds = [...byId.keys()].sort();
+    const sortedExpectedIds = [...expectedSet].sort();
+    if (JSON.stringify(exportedIds) !== JSON.stringify(sortedExpectedIds)) {
+        throw new Error("Exported Variable IDs do not match the Inventory Export plan");
+    }
+    for (const variable of byId.values()) {
+        const aliasIds = new Set();
+        collectVariableAliases(variable.valuesByMode, aliasIds);
+        for (const aliasId of aliasIds) {
+            if (!byId.has(aliasId)) {
+                throw new Error(`Unresolved alias ${aliasId} from ${variable.name}`);
+            }
+        }
+    }
+    if (localOnly)
+        return;
+    const reachable = new Set();
+    const pending = [...directVariableIds];
+    for (let index = 0; index < pending.length; index += 1) {
+        const variableId = pending[index];
+        if (reachable.has(variableId))
+            continue;
+        const variable = byId.get(variableId);
+        if (!variable) {
+            throw new Error(`Direct Variable ${variableId} is missing from the complete Export`);
+        }
+        reachable.add(variableId);
+        const aliasIds = new Set();
+        collectVariableAliases(variable.valuesByMode, aliasIds);
+        for (const aliasId of aliasIds) {
+            if (!reachable.has(aliasId))
+                pending.push(aliasId);
+        }
+    }
+    if (JSON.stringify([...reachable].sort()) !== JSON.stringify(sortedExpectedIds)) {
+        throw new Error("Exported Alias closure does not match the Inventory Export plan");
+    }
 }
 function mergeExports(exportsWithPath) {
     const merged = new Map();
@@ -231,7 +497,152 @@ function mergeExports(exportsWithPath) {
 function exportErrorKey(error) {
     return typeof error.key === "string" && error.key.length > 0 ? error.key : null;
 }
-function validateCompleteness(config, exportFiles, collections, inventory, localOnly) {
+function validatePageCoverage(pageListEntry, pageScanFiles, inventory) {
+    if (!inventory) {
+        return {
+            pageListPresent: pageListEntry !== null,
+            pageCount: null,
+            pageScansVerified: pageScanFiles.length,
+            directVariableIds: [],
+        };
+    }
+    if (!pageListEntry) {
+        throw new Error("page-list.json was not found. Run the bundled page-list snippet before inventory.");
+    }
+    assertObject(inventory.usage, "inventory.usage");
+    const pageList = pageListEntry.data;
+    if (pageList.fileKey !== inventory.fileKey || pageList.fileName !== inventory.fileName) {
+        throw new Error("Page list does not match inventory source");
+    }
+    if (!Number.isInteger(pageList.pageCount) ||
+        pageList.pageCount < 0 ||
+        pageList.pageCount !== pageList.pages.length) {
+        throw new Error("Page list count is inconsistent");
+    }
+    const expectedPagesById = new Map();
+    for (const [position, page] of pageList.pages.entries()) {
+        assertObject(page, `pageList.pages[${position}]`);
+        if (page.index !== position ||
+            typeof page.id !== "string" ||
+            page.id.length === 0 ||
+            typeof page.name !== "string" ||
+            expectedPagesById.has(page.id)) {
+            throw new Error(`Invalid or duplicate page-list entry at index ${position}`);
+        }
+        expectedPagesById.set(page.id, page);
+    }
+    const scansByPageId = new Map();
+    const directVariableIds = new Set();
+    const explicitVariableModeCollectionIds = new Set();
+    let nodeCount = 0;
+    let nodesWithBindings = 0;
+    let referencedStyleCount = 0;
+    let referencedStylesWithBindings = 0;
+    for (const { filePath, data } of pageScanFiles) {
+        if (data.fileKey !== inventory.fileKey || data.fileName !== inventory.fileName) {
+            throw new Error(`Page scan source mismatch in ${path.relative(process.cwd(), filePath)}`);
+        }
+        assertObject(data.page, `${path.relative(process.cwd(), filePath)}.page`);
+        const expected = expectedPagesById.get(data.page.id);
+        if (!expected ||
+            scansByPageId.has(data.page.id) ||
+            data.page.index !== expected.index ||
+            data.page.name !== expected.name) {
+            throw new Error(`Unexpected or duplicate page scan in ${path.relative(process.cwd(), filePath)}`);
+        }
+        scansByPageId.set(data.page.id, data);
+        if (!Array.isArray(data.errors) || data.errors.length > 0) {
+            throw new Error(`Page scan contains errors in ${path.relative(process.cwd(), filePath)}`);
+        }
+        const pageVariableIds = new Set();
+        for (const variableId of data.directVariableIds) {
+            if (typeof variableId !== "string" ||
+                variableId.length === 0 ||
+                pageVariableIds.has(variableId)) {
+                throw new Error(`Invalid or duplicate Variable ID in ${path.relative(process.cwd(), filePath)}`);
+            }
+            pageVariableIds.add(variableId);
+            directVariableIds.add(variableId);
+        }
+        if (JSON.stringify(data.directVariableIds) !==
+            JSON.stringify([...pageVariableIds].sort())) {
+            throw new Error(`Page Variable IDs are not sorted in ${path.relative(process.cwd(), filePath)}`);
+        }
+        if (!Array.isArray(data.explicitVariableModeCollectionIds)) {
+            throw new Error(`Page explicit mode Collection IDs are invalid in ${path.relative(process.cwd(), filePath)}`);
+        }
+        const pageExplicitCollectionIds = new Set();
+        for (const collectionId of data.explicitVariableModeCollectionIds) {
+            if (typeof collectionId !== "string" ||
+                collectionId.length === 0 ||
+                pageExplicitCollectionIds.has(collectionId)) {
+                throw new Error(`Invalid or duplicate explicit mode Collection ID in ${path.relative(process.cwd(), filePath)}`);
+            }
+            pageExplicitCollectionIds.add(collectionId);
+            explicitVariableModeCollectionIds.add(collectionId);
+        }
+        if (JSON.stringify(data.explicitVariableModeCollectionIds) !==
+            JSON.stringify([...pageExplicitCollectionIds].sort())) {
+            throw new Error(`Page explicit mode Collection IDs are not sorted in ${path.relative(process.cwd(), filePath)}`);
+        }
+        const countFields = [
+            "nodes",
+            "nodesWithBindings",
+            "referencedStyles",
+            "referencedStylesWithBindings",
+            "directVariables",
+            "explicitVariableModeCollections",
+            "errors",
+        ];
+        if (!data.counts || countFields.some((field) =>
+            !Number.isInteger(data.counts[field]) || data.counts[field] < 0) ||
+            data.counts.directVariables !== data.directVariableIds.length ||
+            data.counts.explicitVariableModeCollections !==
+                data.explicitVariableModeCollectionIds.length ||
+            data.counts.errors !== data.errors.length) {
+            throw new Error(`Page scan counts are inconsistent in ${path.relative(process.cwd(), filePath)}`);
+        }
+        nodeCount += data.counts.nodes;
+        nodesWithBindings += data.counts.nodesWithBindings;
+        referencedStyleCount += data.counts.referencedStyles;
+        referencedStylesWithBindings += data.counts.referencedStylesWithBindings;
+    }
+    if (scansByPageId.size !== expectedPagesById.size) {
+        const missing = [...expectedPagesById.keys()].filter((pageId) => !scansByPageId.has(pageId));
+        throw new Error(`Page scan coverage is incomplete: missing ${missing.join(", ")}`);
+    }
+    const orderedPageEvidence = pageList.pages.map((page) => ({
+        index: page.index,
+        id: page.id,
+        name: page.name,
+        scanChecksum: scansByPageId.get(page.id).integrity.checksum,
+    }));
+    const sortedDirectVariableIds = [...directVariableIds].sort();
+    const sortedExplicitVariableModeCollectionIds = [
+        ...explicitVariableModeCollectionIds,
+    ].sort();
+    if (inventory.usage.pageCount !== pageList.pageCount ||
+        inventory.usage.scannedPageCount !== scansByPageId.size ||
+        inventory.usage.pageListChecksum !== pageList.integrity.checksum ||
+        inventory.usage.pageScansChecksum !== checksumPayload(orderedPageEvidence) ||
+        inventory.usage.directVariableIdsChecksum !== checksumPayload(sortedDirectVariableIds) ||
+        inventory.usage.directVariableCount !== sortedDirectVariableIds.length ||
+        JSON.stringify(inventory.usage.explicitVariableModeCollectionIds) !==
+            JSON.stringify(sortedExplicitVariableModeCollectionIds) ||
+        inventory.usage.nodeCount !== nodeCount ||
+        inventory.usage.nodesWithBindings !== nodesWithBindings ||
+        inventory.usage.referencedStyleCount !== referencedStyleCount ||
+        inventory.usage.referencedStylesWithBindings !== referencedStylesWithBindings) {
+        throw new Error("Page evidence does not match the inventory usage manifest");
+    }
+    return {
+        pageListPresent: true,
+        pageCount: pageList.pageCount,
+        pageScansVerified: pageScanFiles.length,
+        directVariableIds: sortedDirectVariableIds,
+    };
+}
+function validateCompleteness(config, exportFiles, collections, inventory, exportPlan, directVariableIds, localOnly) {
     if (config.validation.requireInventory && !inventory) {
         throw new Error("inventory.json was not found. Run the preflight/inventory MCP snippet before generation.");
     }
@@ -244,10 +655,96 @@ function validateCompleteness(config, exportFiles, collections, inventory, local
     if (inventory && inventory.fileKey !== sourceFileKey) {
         throw new Error("Inventory source Figma fileKey is inconsistent");
     }
+    if (inventory) {
+        assertObject(inventory.usage, "inventory.usage");
+        if (!Array.isArray(inventory.usage.errors)) {
+            throw new Error("inventory.usage.errors must be an array");
+        }
+        if (typeof inventory.usage.checksum !== "string" || inventory.usage.checksum.length === 0) {
+            throw new Error("inventory.usage.checksum is missing");
+        }
+        if (typeof inventory.local.usageChecksum !== "string" || inventory.local.usageChecksum.length === 0) {
+            throw new Error("inventory.local.usageChecksum is missing");
+        }
+        if (typeof inventory.usage.directVariableIdsChecksum !== "string" ||
+            inventory.usage.directVariableIdsChecksum.length === 0 ||
+            !Number.isInteger(inventory.usage.directVariableCount) ||
+            inventory.usage.directVariableCount < 0) {
+            throw new Error("Inventory direct Variable ID manifest is inconsistent");
+        }
+        if (inventory.usage.directResolvedVariableCount + inventory.usage.aliasDependencyCount !==
+            inventory.usage.resolvedVariableCount) {
+            throw new Error("Inventory usage counts are inconsistent");
+        }
+        if (typeof inventory.local.variableIdsChecksum !== "string" ||
+            inventory.local.variableIdsChecksum.length === 0) {
+            throw new Error("Inventory local Export-plan checksum is missing");
+        }
+        const libraryKeys = new Set();
+        for (const [index, collection] of inventory.libraryCollections.entries()) {
+            if (typeof collection.key !== "string" ||
+                collection.key.length === 0 ||
+                libraryKeys.has(collection.key)) {
+                throw new Error(`inventory.libraryCollections[${index}] has an invalid or duplicate key`);
+            }
+            libraryKeys.add(collection.key);
+            if (typeof collection.variableIdsChecksum !== "string" ||
+                collection.variableIdsChecksum.length === 0) {
+                throw new Error(`inventory.libraryCollections[${index}] has no Export-plan checksum`);
+            }
+        }
+        assertObject(inventory.namingPreflight, "inventory.namingPreflight");
+        assertObject(inventory.namingPreflight.config, "inventory.namingPreflight.config");
+        if ([
+            "preferWebCodeSyntax",
+            "includeLibraryName",
+            "includeCollectionName",
+            "prefix",
+        ].some((field) => inventory.namingPreflight.config[field] !==
+            config.naming[field])) {
+            throw new Error("Naming configuration changed after Inventory. Re-run Inventory before Export.");
+        }
+    }
+    const usageErrors = inventory?.usage.errors ?? [];
+    if (usageErrors.length > 0) {
+        const preview = usageErrors
+            .slice(0, 10)
+            .map((error) => `${error.variableId ?? "unknown-id"}: ${error.message ?? "unknown error"}`)
+            .join("\n");
+        throw new Error(`Variable usage scan contains ${usageErrors.length} unresolved reference(s).\n${preview}` +
+            (usageErrors.length > 10 ? "\n..." : ""));
+    }
     for (const { filePath, data } of exportFiles) {
         if (data.source.fileKey !== sourceFileKey) {
             throw new Error(`Source Figma fileKey mismatch in ${path.relative(process.cwd(), filePath)}: ` +
                 `expected ${sourceFileKey}, got ${data.source.fileKey ?? "missing"}`);
+        }
+        if (inventory && data.source.directVariableIdsChecksum !==
+            inventory.usage.directVariableIdsChecksum) {
+            throw new Error(`Direct Variable ID manifest mismatch in ${path.relative(process.cwd(), filePath)}`);
+        }
+        if (inventory) {
+            const expectedPlan = data.source.type === "local"
+                ? inventory.local
+                : inventory.libraryCollections.find((collection) => collection.key === data.source.libraryCollectionKey &&
+                    (collection.libraryName ?? "") ===
+                        (data.source.libraryName ?? ""));
+            if (!expectedPlan) {
+                throw new Error(`Export plan was not found for ${path.relative(process.cwd(), filePath)}`);
+            }
+            if (data.source.variableIdsChecksum !== expectedPlan.variableIdsChecksum ||
+                data.source.usageChecksum !== expectedPlan.usageChecksum) {
+                throw new Error(`Export plan checksum mismatch in ${path.relative(process.cwd(), filePath)}`);
+            }
+            if (data.source.batchUsageChecksum !== usageIdentityChecksum(data.collections)) {
+                throw new Error(`Batch identity checksum mismatch in ${path.relative(process.cwd(), filePath)}`);
+            }
+        }
+        if (!data.pagination ||
+            data.pagination.batchSize !== config.extraction.maxBatchSize ||
+            data.pagination.maxPayloadBytes !==
+                config.extraction.maxPayloadBytes) {
+            throw new Error(`Extraction limits do not match the selected configuration in ${path.relative(process.cwd(), filePath)}`);
         }
     }
     const allErrors = exportFiles.flatMap(({ filePath, data }) => (data.errors ?? []).map((error) => ({ filePath, error })));
@@ -267,7 +764,16 @@ function validateCompleteness(config, exportFiles, collections, inventory, local
     if (inventory && localExported !== inventory.local.variableCount) {
         throw new Error(`Local Variable count mismatch: inventory=${inventory.local.variableCount}, exported=${localExported}`);
     }
+    if (inventory && usageIdentityChecksum(localCollections) !== inventory.local.usageChecksum) {
+        throw new Error("Local exported Variable identities do not match the inventory usage set");
+    }
     const localFiles = exportFiles.filter(({ data }) => data.source.type === "local");
+    for (const { filePath, data } of localFiles) {
+        if (inventory && data.source.usageChecksum !== inventory.local.usageChecksum) {
+            throw new Error(`Local usage set changed after inventory in ${path.relative(process.cwd(), filePath)}. ` +
+                "Re-run inventory and all exports from one stable Figma revision.");
+        }
+    }
     const paginatedLocalFiles = localFiles.filter(({ data }) => data.pagination !== undefined);
     if (paginatedLocalFiles.length > 0 && paginatedLocalFiles.length !== localFiles.length) {
         throw new Error("Local export mixes paginated and non-paginated files. Remove stale local export files.");
@@ -325,15 +831,29 @@ function validateCompleteness(config, exportFiles, collections, inventory, local
             if (expected.variableCount === null) {
                 throw new Error(`Inventory has no variable count for ${expected.libraryName}/${expected.name}`);
             }
+            if (typeof expected.usageChecksum !== "string" || expected.usageChecksum.length === 0) {
+                throw new Error(`Inventory has no usage checksum for ${expected.libraryName ?? "Remote Library"}/${expected.name}`);
+            }
             libraryExpected += expected.variableCount;
             libraryCollectionsChecked += 1;
+            const expectedLibraryName = expected.libraryName ?? "";
             const matchingCollections = collections.filter((collection) => collection.sourceType === "library" &&
                 collection.key === expected.key &&
-                (collection.libraryName ?? "") === expected.libraryName);
+                (collection.libraryName ?? "") === expectedLibraryName);
             const exportedKeys = new Set(matchingCollections.flatMap((collection) => collection.variables.map((variable) => variable.key)));
+            if (usageIdentityChecksum(matchingCollections) !== expected.usageChecksum) {
+                throw new Error(`Library exported Variable identities do not match inventory for ` +
+                    `${expected.libraryName ?? "Remote Library"}/${expected.name}`);
+            }
             const matchingFiles = exportFiles.filter(({ data }) => data.source.type === "library" &&
                 data.source.libraryCollectionKey === expected.key &&
-                (data.source.libraryName ?? "") === expected.libraryName);
+                (data.source.libraryName ?? "") === expectedLibraryName);
+            for (const { filePath, data } of matchingFiles) {
+                if (data.source.usageChecksum !== expected.usageChecksum) {
+                    throw new Error(`Library usage set changed after inventory for ${expected.libraryName ?? "Remote Library"}/${expected.name} ` +
+                        `in ${path.relative(process.cwd(), filePath)}. Re-run inventory and this Collection export.`);
+                }
+            }
             const errorKeys = new Set(matchingFiles.flatMap(({ data }) => (data.errors ?? [])
                 .map(exportErrorKey)
                 .filter((key) => key !== null)));
@@ -385,6 +905,9 @@ function validateCompleteness(config, exportFiles, collections, inventory, local
                     `finalHasMore=${last?.hasMore ?? "missing"}`);
             }
         }
+        if (usageIdentityChecksum(collections) !== inventory.usage.checksum) {
+            throw new Error("Complete exported Variable identities do not match the inventory usage closure");
+        }
     }
     else if (!localOnly) {
         libraryExported = collections
@@ -409,10 +932,17 @@ function validateCompleteness(config, exportFiles, collections, inventory, local
         : localOnly
             ? null
             : 0;
+    const enabledLibraryCollections = inventory?.enabledLibraryCollections ?? [];
+    const unusedEnabledLibraryCollections = enabledLibraryCollections.filter((collection) => collection.usedVariableCount === 0).length;
+    if (inventory) {
+        validateExportedAliasClosure(collections, exportPlan, directVariableIds, localOnly);
+    }
     return {
         sourceFileKey,
-        scope: localOnly ? "local-only" : "complete",
+        scope: localOnly ? "local-usage-only" : "complete-usage",
         inventoryPresent: inventory !== null,
+        exportPlanBatches: exportPlan.batchCount,
+        exportPlanSource: exportPlan.source,
         localExpected: inventory?.local.variableCount ?? null,
         localExported,
         libraryExpected,
@@ -422,6 +952,8 @@ function validateCompleteness(config, exportFiles, collections, inventory, local
         excludedLibraryCollections,
         excludedLibraryVariables,
         excludedLibraryInventoryErrors,
+        enabledLibraryCollections: enabledLibraryCollections.length,
+        unusedEnabledLibraryCollections,
     };
 }
 function codePointSlug(value) {
@@ -793,6 +1325,32 @@ async function removeEmptyDirectories(rootDirectory) {
     await visit(rootDirectory);
     return removed;
 }
+
+function summarizeWarningsForStdout(warnings) {
+    const summaries = new Map();
+    for (const warning of warnings) {
+        const code = typeof warning?.code === "string" ? warning.code : "UNKNOWN_WARNING";
+        const scope = typeof warning?.scope === "string" ? warning.scope : null;
+        const key = `${code}\u0000${scope ?? ""}`;
+        const summary = summaries.get(key) ?? { code, count: 0 };
+        summary.count += 1;
+        if (scope !== null)
+            summary.scope = scope;
+        summaries.set(key, summary);
+    }
+    return [...summaries.values()].sort((left, right) => left.code.localeCompare(right.code) ||
+        String(left.scope ?? "").localeCompare(String(right.scope ?? "")));
+}
+
+function sanitizeCompletenessForStdout(completeness) {
+    const { sourceFileKey: _sourceFileKey, excludedLibraryInventoryErrors, ...safe } = completeness;
+    return {
+        ...safe,
+        excludedLibraryInventoryErrorCount: Array.isArray(excludedLibraryInventoryErrors)
+            ? excludedLibraryInventoryErrors.length
+            : 0,
+    };
+}
 async function main() {
     assertSupportedRuntime();
     if (options.runtimeCheckOnly) {
@@ -817,18 +1375,33 @@ async function main() {
     }
     const jsonFiles = await findJsonFiles(inputDirectory);
     const discoveredExportFiles = [];
+    const exportPlanFiles = [];
+    const pageScanFiles = [];
     const ignoredFiles = [];
     let inventoryEntry = null;
+    let pageListEntry = null;
     for (const filePath of jsonFiles) {
         const data = await readJson(filePath);
         if (isExportFile(data)) {
             discoveredExportFiles.push({ filePath, data });
+        }
+        else if (isExportPlanFile(data)) {
+            exportPlanFiles.push({ filePath, data });
         }
         else if (isInventoryFile(data)) {
             if (inventoryEntry) {
                 throw new Error("Multiple figma-variable-inventory files were found under the input directory");
             }
             inventoryEntry = { filePath, data };
+        }
+        else if (isPageListFile(data)) {
+            if (pageListEntry) {
+                throw new Error("Multiple figma-variable-page-list files were found under the input directory");
+            }
+            pageListEntry = { filePath, data };
+        }
+        else if (isPageScanFile(data)) {
+            pageScanFiles.push({ filePath, data });
         }
         else {
             ignoredFiles.push(filePath);
@@ -850,8 +1423,21 @@ async function main() {
         throw new Error(`No ${scope}figma-variable-export JSON files found under ${config.inputDirectory}`);
     }
     let payloadChecksumsVerified = 0;
+    if (pageListEntry && verifyPayloadIntegrity(pageListEntry.data, path.relative(process.cwd(), pageListEntry.filePath), config.validation.requirePayloadChecksum)) {
+        payloadChecksumsVerified += 1;
+    }
+    for (const { filePath, data } of pageScanFiles) {
+        if (verifyPayloadIntegrity(data, path.relative(process.cwd(), filePath), config.validation.requirePayloadChecksum)) {
+            payloadChecksumsVerified += 1;
+        }
+    }
     if (inventoryEntry && verifyPayloadIntegrity(inventoryEntry.data, path.relative(process.cwd(), inventoryEntry.filePath), config.validation.requirePayloadChecksum)) {
         payloadChecksumsVerified += 1;
+    }
+    for (const { filePath, data } of exportPlanFiles) {
+        if (verifyPayloadIntegrity(data, path.relative(process.cwd(), filePath), config.validation.requirePayloadChecksum)) {
+            payloadChecksumsVerified += 1;
+        }
     }
     for (const { filePath, data } of exportFiles) {
         if (verifyPayloadIntegrity(data, path.relative(process.cwd(), filePath), config.validation.requirePayloadChecksum)) {
@@ -859,13 +1445,22 @@ async function main() {
         }
     }
     const inventory = inventoryEntry?.data ?? null;
+    if (inventory && Buffer.byteLength(JSON.stringify(inventory), "utf8") >
+        config.extraction.maxInventoryPayloadBytes) {
+        throw new Error("Inventory payload exceeds config.extraction.maxInventoryPayloadBytes");
+    }
+    const pageCoverage = validatePageCoverage(pageListEntry, pageScanFiles, inventory);
+    const exportPlan = validateExportPlan(config, exportPlanFiles, inventory, pageCoverage.directVariableIds, options.localOnly);
     const collections = mergeExports(exportFiles);
-    const completeness = validateCompleteness(config, exportFiles, collections, inventory, options.localOnly);
+    const completeness = validateCompleteness(config, exportFiles, collections, inventory, exportPlan, pageCoverage.directVariableIds, options.localOnly);
     const { css, report } = generate(config, collections, exportFiles.map((entry) => entry.filePath));
     const fullReport = {
         ...report,
+        warnings: [...(inventory?.warnings ?? []), ...report.warnings],
         completeness: {
             ...completeness,
+            ...pageCoverage,
+            directVariableIds: undefined,
             payloadChecksumsVerified,
             excludedLibraryExportFiles: discoveredExportFiles.length - exportFiles.length,
         },
@@ -874,7 +1469,7 @@ async function main() {
     const reportText = `${JSON.stringify(fullReport, null, 2)}\n`;
     if (options.validateOnly) {
         console.log(`Validated ${exportFiles.length} export file(s) and ${payloadChecksumsVerified} payload checksum(s) ` +
-            `from Figma fileKey ${completeness.sourceFileKey}.`);
+            `for the supplied Figma file.`);
         return;
     }
     if (options.dryRun) {
@@ -897,8 +1492,8 @@ async function main() {
     const reportSummary = {
         counts: fullReport.counts,
         selectors: fullReport.selectors,
-        warnings: fullReport.warnings,
-        completeness: fullReport.completeness,
+        warnings: summarizeWarningsForStdout(fullReport.warnings),
+        completeness: sanitizeCompletenessForStdout(fullReport.completeness),
     };
     console.log(`Generated ${report.counts.declarations} declarations from ${report.counts.variables} variables.\n` +
         `CSS: ${path.relative(process.cwd(), outputCss)}\n` +
