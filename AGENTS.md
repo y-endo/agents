@@ -42,6 +42,13 @@ git switch -c feature/<issue-number>-<short-summary>
 node .agents/skills/figma-variable-extract/scripts/test-figma-variable-extract.mjs
 ```
 
+`figma-codegen`を変更した後は、次の回帰テストを実行する。
+
+```bash
+node .agents/skills/figma-codegen/scripts/test-compare-images.mjs
+node .agents/skills/figma-codegen/scripts/test-validate-figma-code-map.mjs
+```
+
 ## コミット直前の必須確認
 
 すべてのコミットについて、コミットする直前にリポジトリルートから次の2コマンドをこの順序で実行する。

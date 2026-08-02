@@ -23,6 +23,7 @@ async function listFiles(directory, relative = "") {
   for (const entry of await readdir(path.join(directory, relative), {
     withFileTypes: true,
   })) {
+    if (entry.name === ".DS_Store") continue;
     const child = path.join(relative, entry.name);
     if (entry.isDirectory()) {
       files.push(...(await listFiles(directory, child)));

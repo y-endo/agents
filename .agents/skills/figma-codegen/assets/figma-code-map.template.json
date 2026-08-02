@@ -1,0 +1,162 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "fileUrl": "https://www.figma.com/design/REPLACE_WITH_FILE_KEY/REPLACE_WITH_NAME?node-id=1-2",
+    "revision": {"type": "figma-version", "value": "REPLACE_WITH_REVISION"},
+    "selectionNodeIds": ["1:2"],
+    "rootNodeIds": ["1:2"]
+  },
+  "target": {
+    "stack": "REPLACE_WITH_VERIFIED_STACK",
+    "supportedWidths": {"min": 1440, "max": 1440, "basisRef": "supported-widths"},
+    "breakpoints": [],
+    "requiredStates": [
+      {"rootNodeId": "1:2", "name": "default", "basisRef": "root-boundary"}
+    ],
+    "scenarios": [
+      {
+        "name": "desktop-default",
+        "rootNodeId": "1:2",
+        "viewport": {"width": 1440, "height": 900},
+        "state": "default",
+        "evidence": {"kind": "figma-node", "reference": "1:2"}
+      }
+    ]
+  },
+  "acquisition": {
+    "metadata": {"status": "acquired", "via": "mcp:get_metadata"},
+    "designContext": {"status": "acquired", "via": "mcp:get_design_context"},
+    "screenshot": {"status": "acquired", "via": "mcp:get_screenshot"},
+    "variables": {"status": "acquired", "via": "mcp:get_variable_defs"},
+    "codeConnect": {"status": "acquired", "via": "mcp:get_code_connect_map"},
+    "libraries": {"status": "not-applicable", "reason": "REPLACE_WITH_REASON"},
+    "assets": {"status": "not-applicable", "reason": "REPLACE_WITH_REASON"},
+    "motion": {"status": "not-applicable", "reason": "REPLACE_WITH_REASON"},
+    "shaders": {"status": "not-applicable", "reason": "REPLACE_WITH_REASON"},
+    "restGapFill": {"status": "not-applicable", "reason": "MCP supplied the scoped evidence"}
+  },
+  "decisions": {
+    "implementation-approval": {
+      "kind": "user-decision",
+      "summary": "REPLACE_WITH_APPROVED_IMPLEMENTATION_PROPOSAL"
+    },
+    "root-boundary": {
+      "kind": "figma-structure",
+      "summary": "REPLACE_WITH_BOUNDARY_BASIS"
+    },
+    "root-placement": {
+      "kind": "project-rule",
+      "summary": "REPLACE_WITH_HOST_AND_SCOPE_BASIS"
+    },
+    "supported-widths": {
+      "kind": "project-rule",
+      "summary": "REPLACE_WITH_SUPPORTED_WIDTH_BASIS"
+    }
+  },
+  "mappings": [
+    {
+      "rootNodeId": "1:2",
+      "code": [
+        {
+          "id": "root",
+          "path": "src/REPLACE_WITH_OUTPUT_PATH",
+          "symbol": "REPLACE_WITH_OUTPUT_SYMBOL",
+          "locator": "REPLACE_WITH_UNIQUE_OUTPUT_LOCATOR"
+        },
+        {
+          "id": "host",
+          "path": "src/REPLACE_WITH_HOST_PATH",
+          "symbol": "REPLACE_WITH_HOST_SYMBOL",
+          "locator": "REPLACE_WITH_UNIQUE_HOST_LOCATOR"
+        }
+      ],
+      "implementation": {
+        "approvalRef": "implementation-approval",
+        "boundary": {"kind": "component", "outputCode": "root", "basisRef": "root-boundary"},
+        "placement": {"reuseScope": "shared", "hostCode": "host", "basisRef": "root-placement"}
+      },
+      "evidence": {
+        "identity": {
+          "category": "identity-hierarchy",
+          "origin": "figma-property",
+          "source": {"nodeId": "1:2", "property": "type", "value": "FRAME"},
+          "target": {
+            "code": "root",
+            "locator": "REPLACE_WITH_UNIQUE_OUTPUT_LOCATOR",
+            "property": "component",
+            "value": "REPLACE_WITH_OUTPUT_SYMBOL"
+          },
+          "status": "exact"
+        },
+        "geometry": {
+          "category": "geometry",
+          "origin": "figma-property",
+          "source": {"nodeId": "1:2", "property": "size", "value": {"width": 1440, "height": 900}},
+          "target": {
+            "code": "root",
+            "locator": "REPLACE_WITH_UNIQUE_OUTPUT_LOCATOR",
+            "property": "render-bounds",
+            "value": {"width": 1440, "height": 900}
+          },
+          "status": "exact"
+        }
+      },
+      "notApplicable": {
+        "component-properties": "REPLACE_WITH_REASON",
+        "content": "REPLACE_WITH_REASON",
+        "layout": "REPLACE_WITH_REASON",
+        "paint": "REPLACE_WITH_REASON",
+        "stroke-radius": "REPLACE_WITH_REASON",
+        "effects": "REPLACE_WITH_REASON",
+        "typography": "REPLACE_WITH_REASON",
+        "variables-styles": "REPLACE_WITH_REASON",
+        "assets": "REPLACE_WITH_REASON",
+        "responsive": "REPLACE_WITH_REASON",
+        "interaction-motion": "REPLACE_WITH_REASON",
+        "accessibility": "REPLACE_WITH_REASON"
+      },
+      "componentBindings": {}
+    }
+  ],
+  "assets": [],
+  "gaps": [{"nodeId": "1:2", "category": "layout", "reason": "Replace template gaps"}],
+  "verification": {
+    "implementation": {
+      "algorithm": "figma-codegen-files-sha256@1",
+      "digest": "REPLACE_WITH_CURRENT_IMPLEMENTATION_SHA256",
+      "verifiedAt": "REPLACE_WITH_ISO_TIMESTAMP",
+      "additionalPaths": []
+    },
+    "repositoryChecks": [{"command": "REPLACE_WITH_PROJECT_CHECK", "result": "pass"}],
+    "visualComparisons": [
+      {
+        "scenario": "desktop-default",
+        "source": {"width": 1440, "height": 900, "sha256": "REPLACE_WITH_SOURCE_IMAGE_SHA256"},
+        "implementation": {
+          "width": 1440,
+          "height": 900,
+          "sha256": "REPLACE_WITH_IMPLEMENTATION_IMAGE_SHA256",
+          "rootBounds": {"x": 0, "y": 0, "width": 1440, "height": 900}
+        },
+        "viewport": {"width": 1440, "height": 900, "devicePixelRatio": 1},
+        "metrics": {"pixelDiffRatio": 0, "normalizedRmse": 0}
+      }
+    ],
+    "responsiveChecks": [
+      {
+        "scenario": "desktop-default",
+        "viewport": {"width": 1440, "height": 900, "devicePixelRatio": 1},
+        "document": {"clientWidth": 1440, "scrollWidth": 1440},
+        "rootBounds": {"x": 0, "y": 0, "width": 1440, "height": 900},
+        "assertions": [
+          {
+            "property": "REPLACE_WITH_MEASURED_PROPERTY",
+            "expected": "REPLACE_WITH_EVIDENCE_VALUE",
+            "actual": "REPLACE_WITH_MEASURED_VALUE",
+            "basisRef": "root-boundary"
+          }
+        ]
+      }
+    ]
+  }
+}

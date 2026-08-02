@@ -14,3 +14,5 @@ jobs:
           node-version: 24
       - run: node scripts/sync-skills.mjs --check
       - run: node .agents/skills/figma-variable-extract/scripts/test-figma-variable-extract.mjs
+      - run: node .agents/skills/figma-codegen/scripts/test-compare-images.mjs
+      - run: node .agents/skills/figma-codegen/scripts/test-validate-figma-code-map.mjs

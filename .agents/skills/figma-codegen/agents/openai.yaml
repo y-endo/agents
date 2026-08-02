@@ -1,0 +1,4 @@
+interface:
+  display_name: "Figmaコード生成"
+  short_description: "Figmaの根拠から再同期可能なproject nativeコードを生成"
+  default_prompt: "$figma-codegenを使ってFigmaと対象projectをread-onlyで調査し、境界、配置、component binding、必須state、interaction、対応widthとresponsive根拠を含む実装案を提示してください。私が明示承認するまで実装せず、承認後はmapを先に記録して推測なしで実装し、正確なFigma node比較、全scenarioのbrowser実測、現在のcodeとassetの共通digestを完了gateにしてください。"
