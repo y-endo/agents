@@ -63,28 +63,9 @@ node scripts/scan-publishable.mjs
 いずれかのコマンドが失敗した場合はコミットしない。
 失敗原因を修正し、コミット直前に両方のコマンドを改めて実行する。
 
-## Pull Requestとリリース
+## Pull Request
 
 作業ブランチから`main`へのPull Requestを作成する。
 Pull Request本文には対応するIssueを`Closes #<issue-number>`で記載し、変更内容、検証結果、互換性への影響を説明する。
 必須チェックとレビューが完了するまでマージしない。
 `main`へ直接pushまたは直接mergeしない。
-
-リリース時は、Pull Requestを`main`へマージした後、最新の`main`上のリリース対象コミットへ注釈付きタグを付ける。
-タグはSemantic Versioningに従う`vMAJOR.MINOR.PATCH`形式とし、既存タグを移動または再利用しない。
-
-- `MAJOR`：後方互換性のないSkillの契約、出力、利用手順の変更
-- `MINOR`：後方互換性を保ったSkillまたは機能の追加
-- `PATCH`：後方互換性を保った不具合修正、文書修正、内部改善
-
-リリースするバージョンはIssueまたはPull Requestで明示する。
-タグは作業ブランチやマージ前のコミットへ付けない。
-
-```bash
-git switch main
-git pull --ff-only origin main
-git tag -a vX.Y.Z -m "Release vX.Y.Z"
-git push origin vX.Y.Z
-```
-
-タグのpushを確認した後、不要になった作業ブランチを削除する。
