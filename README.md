@@ -12,6 +12,7 @@ CodexとClaude Codeで再利用するスキルを管理するリポジトリで�
 | `commit-message` | Git変更と規約を確認し、承認されたファイルをstageして、チケットID付きの日本語メッセージを作成します。確定したstage差分とメッセージへの明示許可後だけコミットします。 | Git | [Codex](.agents/skills/commit-message/SKILL.md) / [Claude Code](.claude/skills/commit-message/SKILL.md) |
 | `figma-codegen` | Figma MCPと対象projectの根拠から実装案を作り、明示承認後にレスポンシブUIを生成します。初版mapで配置、必須state、Component binding、interaction、visual比較を記録し、JS/TS semantic検査と現在のcode・assetの共通digestで差分同期を保護します。比較画像は保持しません。 | Figma公式MCP、Node.js 22以上、対象projectの実行環境、必要に応じてFigma REST APIのread権限 | [Codex](.agents/skills/figma-codegen/SKILL.md) / [Claude Code](.claude/skills/figma-codegen/SKILL.md) |
 | `figma-variable-extract` | Figma DesignファイルのVariableを公式Remote MCPで抽出し、完全生成またはローカル限定生成の完全性を検証してCSS Design Tokensを生成します。raw JSONとreport JSONは同じプロジェクト内へ一時保存し、CSS生成成功後に削除します。 | Figma公式Remote MCP、Node.js 22以上 | [Codex](.agents/skills/figma-variable-extract/SKILL.md) / [Claude Code](.claude/skills/figma-variable-extract/SKILL.md) |
+| `japanese-design-review` | 日本語WebサイトとブラウザUIを、ユーザータスク、情報設計、文字組み、視覚階層、レスポンシブ、操作性から監修し、Hard Gateと重大度順の指摘を返します。 | 対象プロジェクトのread権限。render確認は対象プロジェクトの実行環境 | [Codex](.agents/skills/japanese-design-review/SKILL.md) / [Claude Code](.claude/skills/japanese-design-review/SKILL.md) |
 
 ## スキルを追加するとき
 

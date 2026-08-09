@@ -1,0 +1,4 @@
+interface:
+  display_name: "日本語デザインレビュー"
+  short_description: "日本語Webの情報設計、文字組み、視覚階層を根拠付きで監修"
+  default_prompt: "$japanese-design-reviewを使って、この日本語Web UIをユーザータスク、情報設計、文字組み、視覚階層、レスポンシブ、操作性からレビューし、Hard Gateと重大度順の指摘を示してください。"
