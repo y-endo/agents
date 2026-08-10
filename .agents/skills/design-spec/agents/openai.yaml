@@ -1,0 +1,4 @@
+interface:
+  display_name: "デザイン仕様"
+  short_description: "対話とHTMLの視覚すり合わせから実装可能な最新デザイン仕様を作成"
+  default_prompt: "$design-specを使い、typographyとサイト全体のwidth modelのhard gate、1・2・3カラムのpage shell、header・footer・sidebarの要否を確認してから、必要な各categoryの5案を1カラムで比較し、配色とpage全体の雰囲気を承認した最新DESIGN.mdを作成してください。"
