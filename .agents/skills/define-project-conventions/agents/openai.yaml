@@ -1,0 +1,4 @@
+interface:
+  display_name: "プロジェクト規約策定"
+  short_description: "公式推奨と既存構成からプロジェクト固有の開発規約を策定・監査"
+  default_prompt: "$define-project-conventionsを使い、既存構成と規約を尊重しながら、公式推奨に基づくプロジェクト規約の策定または既存規約の遵守経路の監査を対話形式で進めてください。"
