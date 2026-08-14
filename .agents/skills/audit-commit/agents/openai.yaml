@@ -1,0 +1,4 @@
+interface:
+  display_name: "コミット前監査"
+  short_description: "コミット前のセキュリティとコンプライアンスを短時間で監査"
+  default_prompt: "$audit-commitを使って、現在のstage差分をセキュリティとコンプライアンスの観点から監査し、コミット可否を根拠付きで判定してください。"

@@ -9,6 +9,7 @@ CodexとClaude Codeで再利用するスキルを管理するリポジトリで�
 
 | スキル | 概要 | 必要な環境 | エントリーポイント |
 |---|---|---|---|
+| `audit-commit` | AIエージェントがコミットする直前に、stage差分をセキュリティ、機密情報、サプライチェーン、データ・ポリシー、検証完全性の観点から短時間で監査し、根拠付きのGOまたはNO-GOを返します。 | Git、対象プロジェクトのread権限、リポジトリ指定の検証環境 | [Codex](.agents/skills/audit-commit/SKILL.md) / [Claude Code](.claude/skills/audit-commit/SKILL.md) |
 | `commit-message` | Git変更と規約を確認し、承認されたファイルをstageして、チケットID付きの日本語メッセージを作成します。確定したstage差分とメッセージへの明示許可後だけコミットします。 | Git | [Codex](.agents/skills/commit-message/SKILL.md) / [Claude Code](.claude/skills/commit-message/SKILL.md) |
 | `define-project-conventions` | 新規・既存の規約項目を分類し、既存規約を維持しながら、公式推奨と実装の慣行からコーディング規約、構成、命名、検証、AI向け遵守経路を対話形式で策定または監査します。 | 対象プロジェクトのread権限。外部推奨の調査は必要な場合のみ。変更する場合はwrite権限 | [Codex](.agents/skills/define-project-conventions/SKILL.md) / [Claude Code](.claude/skills/define-project-conventions/SKILL.md) |
 | `design-spec` | 非デザイナーの曖昧なイメージを対話と比較で具体化し、Standardではtypography、width model、page shell、header・footer・sidebarを確認して、必要な各categoryの5案と連動する配色を1カラムのHTMLで比較し、page全体の雰囲気まで承認した最新DESIGN.mdへ整理します。 | 対象プロジェクトのread/write権限。外部参照調査は必要な場合のみ | [Codex](.agents/skills/design-spec/SKILL.md) / [Claude Code](.claude/skills/design-spec/SKILL.md) |
