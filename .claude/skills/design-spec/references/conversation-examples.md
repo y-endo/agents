@@ -7,6 +7,7 @@ Use these transcripts to calibrate the dialogue. Adapt the questions to availabl
 1. Quick narrow change
 2. Standard direction discovery
 3. Shortening a tiring process
+4. Interactive proposal tuning
 
 ## Quick narrow change
 
@@ -188,3 +189,34 @@ I will resolve the representative content and inspect the normal accepted path, 
 I will proceed unless this delegation should exclude a specific area.
 
 This response gives the user an exit from repeated discovery without pretending that unsupported decisions were approved.
+
+## Interactive proposal tuning
+
+**User:** The proposals are close, but I want to adjust the text size, line height, and corner radius while comparing them.
+
+**Agent:** The project has verified body-size token steps, but no continuous line-height or radius scale. The current candidates use line height `1.65` and radius `8px`; I verified those as their initial values. I can add one shared tuning panel to the comparison HTML now. Body size will use the existing token steps. Before I expose the other two controls, approve their exploratory minimum, maximum, step, and initial values; otherwise I will omit them rather than invent values.
+
+**User:** Use the existing body-size tokens. For this exploration, approve line height from `1.5` through `1.8` in `0.05` steps with initial value `1.65`, and radius from `0px` through `16px` in `2px` steps with initial value `8px`.
+
+**Agent:** I will keep the candidates' structure and product-specific grammar fixed. The panel will initially apply the same values to every candidate for a fair comparison, then allow one stable candidate ID to be adjusted separately. Native controls will update scoped CSS properties immediately in desktop and narrow previews. The baseline comparison, reset actions, and selectable current-state snapshot will remain in the temporary HTML only. Every working value remains Proposed until you return the snapshot and approve it.
+
+**User:** I prefer `TYPE-B`. I switched to selected-candidate tuning and copied this snapshot:
+
+```json
+{
+  "version": 1,
+  "candidateIds": ["TYPE-B"],
+  "scope": "selected-candidate",
+  "adjustments": [
+    { "id": "body-size", "value": "--font-body-md", "unit": "token", "source": { "type": "project-token", "reference": "--font-body-md" }, "responsiveScope": "shared" },
+    { "id": "body-line-height", "value": 1.7, "unit": "unitless", "source": { "type": "approved-range", "min": 1.5, "max": 1.8, "step": 0.05, "initial": 1.65 }, "responsiveScope": "shared" },
+    { "id": "control-radius", "value": 6, "unit": "px", "source": { "type": "approved-range", "min": 0, "max": 16, "step": 2, "initial": 8 }, "responsiveScope": "shared" }
+  ]
+}
+```
+
+**Agent:** I parsed the snapshot and rechecked its version, candidate and control IDs, token reference, ranges, step alignment, initial values, units, and responsive scope against the current comparison sheet. They pass. The values are still Proposed. Approve this candidate and snapshot for the combined preview?
+
+**User:** Approved.
+
+**Agent:** I will combine the approved current values with the other selected categories, inspect both required viewports, and ask for final combined-context approval. The accepted visual reference will contain the resulting design but not the tuning panel, baseline, presets, snapshot output, or rejected values.

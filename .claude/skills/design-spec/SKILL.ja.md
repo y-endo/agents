@@ -1,6 +1,6 @@
 ---
 name: design-spec
-description: デザイン探索、componentとpaletteの視覚調整を支援し、曖昧なイメージを採用済みvisual reference付きの承認済みで実装可能なDESIGN.mdへ変換する。非デザイナーが共同でのデザイン方向、参照候補、実質的に異なるart direction、design system上の判断、実装前の視覚調整、または現在のdesign contractの改訂を必要とするときに使用する。承認済み方向の視覚的な試作にも使用する。成果物にデザインの方向または仕様を含まない実装だけの作業、単発の批評、一般的なデザイン教育、アクセシビリティ監査には使用しない。
+description: デザイン探索、componentとpaletteの操作可能な視覚調整を支援し、曖昧なイメージを採用済みvisual reference付きの承認済みで実装可能なDESIGN.mdへ変換する。非デザイナーが共同でのデザイン方向、参照候補、実質的に異なるart direction、design system上の判断、実装前の視覚調整、または現在のdesign contractの改訂を必要とするときに使用する。承認済み方向の視覚的な試作にも使用する。成果物にデザインの方向または仕様を含まない実装だけの作業、単発の批評、一般的なデザイン教育、アクセシビリティ監査には使用しない。
 ---
 
 # デザイン仕様を作る
@@ -46,6 +46,9 @@ radiusなど、依頼された一軸だけを変え、他を維持した案で�
 referenceは存在するが対象categoryがない場合は、現在の採用済みsampleをすべて保持し、新しいsampleと必要な文脈を統合する。
 採用済みvisual referenceがない場合は、確認済みの現在の実装と契約から最小限のbaselineを作り、承認されたQuick範囲だけを含むreferenceを作る。
 文章だけの選択肢ではvisual calibrationを完了せず、全体のcalibrationはやり直さない。
+
+根拠のある数値調整が視覚的なQuick判断に役立つ場合は、3案に対して影響するcategoryと明示された調整軸だけを示す。
+Standardのcontrol数を適用せず、無関係なcontrolを追加せず、調整panelによってQuickの範囲を広げない。
 
 新しい方向、greenfield製品、redesign、または構成、階層、typographyの性格、palette、imagery、密度、navigation、motionについて重要な選択が必要な複数の関連screenには**Standard**を使う。
 
@@ -143,6 +146,11 @@ domain object、繰り返す操作、情報の形、物理的または文化的�
 適用する各categoryについて、製品固有の5案を一つの縦方向の比較columnへ並べる。
 適用範囲に応じてtype、surface、page shell、必要なheader、footer、sidebar、card、control、table、listを含める。
 意味上の役割を持つ配色を5案示し、palette controlで選択した配色をすべての候補とpage全体の統合previewへ適用する。
+
+根拠のある数値調整が案の比較や調整に役立つ場合は、比較sheetへ一つの共通調整panelを追加する。
+確認済みのtoken段階または範囲を、すべての候補か明示的に選択した一案へ適用し、desktopとnarrowのpreviewへ即時反映する。
+構造上のdesign intentは固定し、調整中の値を**Proposed**として扱い、明示承認に使う現在状態のtuning snapshotを出力する。
+採用済みvisual referenceには承認済みの結果だけを残し、control、棄却値、調整履歴は残さない。
 
 categoryごとの案とpaletteをユーザーが選べるようにする。
 選択後はdesktopとnarrowの代表pageへ統合し、選択内容を黙って変えずに競合を修正して、page全体の雰囲気について最終承認を求める。

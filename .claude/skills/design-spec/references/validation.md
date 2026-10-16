@@ -52,6 +52,25 @@ Check relationships rather than isolated feature presence: focal point, relative
 
 For a Target, compare against the approved reference evidence only when that evidence remains available and is permitted for use. Pixel identity is not required. Fail when isolated details appear but the approved structural or experiential relationship is materially lost. Mark `Not checked` when the reference cannot be reproduced reliably.
 
+## Interactive tuning evidence
+
+When the temporary comparison includes bounded tuning, verify:
+
+- every exposed control changes a material relationship and cites verified project tokens, approved direction evidence, or an explicit Proposed range
+- the panel distinguishes **All candidates** from one visibly identified **Selected candidate**, and does not silently change structure or another direction-defining relationship
+- discrete token values use native selection controls, while each continuous range has a synchronized labeled numeric value, unit, minimum, maximum, step, and validation
+- native labels, grouping, keyboard operation, visible focus, non-color state cues, and usable target sizes remain present
+- scoped CSS custom properties update only the declared previews on the `input` event, while the original candidates remain usable without JavaScript
+- baseline comparison renders the exact initial values without changing the working values or displayed snapshot
+- per-control or whole-scope reset restores the exact initial values and updates the displayed snapshot to that restored current state
+- desktop and narrow contexts show the current values, and any separate responsive value has explicit contract authority and visible scope
+- the displayed current-state JSON uses version `1`, the only supported version, and identifies candidate IDs, adjustment scope, control IDs, values, units, structured evidence source, and responsive scope without retaining history
+- every returned snapshot is parsed and rechecked against the current comparison sheet's immutable definitions: all adjustments match version `1`, candidate and control IDs, scope, unit, and responsive scope; `project-token` adjustments reference an existing allowed token; `approved-range` adjustments match a finite numeric value, minimum, maximum, step alignment, and initial value
+- candidate selection, tuning snapshot approval, coherence correction, and final combined-context approval remain distinct evidence
+- the accepted visual reference and `DESIGN.md` agree on the approved current values, while the accepted HTML contains no tuning controls, baseline state, presets, snapshot output, rejected values, or tuning history
+
+Mark the tuning check `Not checked` when the user adjusted an unobservable local HTML file but did not return the displayed snapshot. Mark it `Fail` when the returned JSON is malformed, uses a version other than `1`, or disagrees with the current candidate or control definitions. Do not reconstruct values from the original file or accept unverified hand-written replacements.
+
 ## Accepted visual reference
 
 For every Standard contract marked `Ready for implementation`, verify:
@@ -65,6 +84,7 @@ For every Standard contract marked `Ready for implementation`, verify:
 - calibration evidence names every applicable category, exactly five design-intent candidates per category, exactly five palettes, one selection per category and palette, any coherence correction approval, and final combined approval
 - all comparison groups remain in one vertical column at every viewport; internal previews still render the approved multi-column site shell where applicable
 - changing the native palette radio group applies the selected semantic color properties to every candidate and the combined preview, while keyboard focus and a non-color selected-state cue remain visible
+- when bounded tuning was used, the interactive tuning evidence above passes for the approved current snapshot
 - the final desktop and narrow previews combine the approved shell, required shell components, primary task, and representative content, and have explicit approval for overall atmosphere and composition
 - the project-approved accepted-reference path named in `DESIGN.md` contains only accepted styles and current coverage
 - `DESIGN.md` links to that HTML, and the HTML contains a visible resolving link back to `DESIGN.md`
@@ -76,6 +96,7 @@ For a Quick visual change, verify:
 
 - the comparison rendered exactly three candidates for the affected category and enough context to judge them
 - candidate selection and final combined-context approval are separate evidence
+- when bounded tuning was used, the interactive tuning evidence above passes for the approved current snapshot
 - a new limited reference uses a verified current implementation or contract baseline
 - every unaffected sample from an existing reference remains present
 - an omitted category is merged without replacing unrelated accepted content

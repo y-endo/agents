@@ -9,10 +9,11 @@ Read this file before creating component or palette comparisons, an accepted vis
 3. Width-model gate
 4. Page-shell decision
 5. Temporary comparison sheet
-6. Candidate requirements
-7. Selection and coherence pass
-8. Accepted visual reference
-9. Later adjustments
+6. Bounded tuning panel
+7. Candidate requirements
+8. Selection and coherence pass
+9. Accepted visual reference
+10. Later adjustments
 
 ## Required calibration
 
@@ -107,6 +108,63 @@ Implement the five palettes as a native radio group with a `fieldset`, a `legend
 
 Avoid remote fonts, scripts, images, analytics, or dependencies unless the user explicitly authorizes them and they are necessary. Label unavailable assets or behavior rather than substituting a misleading approximation.
 
+## Bounded tuning panel
+
+When at least one grounded quantitative relationship would help the user compare or refine proposals, add one tuning panel to the temporary comparison sheet. The panel supplements the required candidates; it does not turn cosmetic variations into different Standard directions or replace candidate selection and final combined approval.
+
+For Standard, expose only material axes supported by verified project tokens, the approved direction, or explicit user choices, normally five through eight controls such as body type size, line height, spacing density, surface or control radius, and content measure. For Quick, expose only the affected category and explicitly requested axes across the required three candidates; do not apply the Standard control count, expose unrelated axes, or widen the Quick scope through tuning. Omit an axis when its valid values or consequences cannot be established without guessing.
+
+Use these scope rules:
+
+- **All candidates** applies the same shared relationship to every compatible candidate so comparisons remain fair. Make this the initial scope while the user is comparing directions.
+- **Selected candidate** applies values only to one visibly named stable candidate ID. Use it to refine a promising proposal without silently changing the others.
+- Keep structure, hierarchy, product-specific grammar, and other direction-defining relationships fixed unless the user returns to Explore. Do not make a spacing or radius slider stand in for a materially different direction.
+- A responsive value stays shared between desktop and narrow previews unless the approved contract supports separate values. Label any approved viewport-specific control with its exact scope.
+
+Prefer existing discrete token steps in native radios or a native select. Use a native range input only when continuous values are valid and its minimum, maximum, step, initial value, and unit come from verified project evidence or an explicit Proposed range. Pair a range with a labeled number input when the value is valid as direct numeric input. Keep the visible value and unit synchronized, reject values outside the allowed range, and preserve project-native units such as `rem` and unitless line height.
+
+Group related controls with `fieldset` and `legend`, associate every input with a visible label, retain visible keyboard focus, and keep target sizes usable. Use native controls and a restrained `accent-color` only when it remains distinguishable from the background; do not replace native semantics only to style the panel. Apply changes on the `input` event through scoped CSS custom properties so the affected preview updates immediately. Keep the original candidates usable when JavaScript is unavailable.
+
+Provide desktop and narrow preview controls or show both previews together. A viewport switch changes only the representative preview context; it does not authorize different values or count as evidence that both contexts were checked. Before approval, inspect every required viewport with the current settings.
+
+Preserve an immutable baseline for each candidate and provide:
+
+- reset for one control and for the whole current scope; reset restores the applicable initial values and updates the snapshot to that restored current state
+- a baseline versus current-state comparison that renders the baseline without changing the working values or snapshot
+- optional named presets only when each preset maps to verified project values and states its consequence
+- a current-state snapshot shown as selectable text, with clipboard copying only as an enhancement
+
+Emit the current-state snapshot as JSON using this minimum schema. Additional project-relative evidence references are allowed, but do not omit these fields:
+
+```json
+{
+  "version": 1,
+  "candidateIds": ["TYPE-B"],
+  "scope": "selected-candidate",
+  "adjustments": [
+    {
+      "id": "body-line-height",
+      "value": 1.7,
+      "unit": "unitless",
+      "source": {
+        "type": "approved-range",
+        "min": 1.5,
+        "max": 1.8,
+        "step": 0.05,
+        "initial": 1.65
+      },
+      "responsiveScope": "shared"
+    }
+  ]
+}
+```
+
+The only supported snapshot version is the integer `1`; any other or missing version is `Fail`. Use `scope` values `all-candidates` or `selected-candidate`. For a project-token adjustment, set `source.type` to `project-token` and include its exact project token in `source.reference`; use `unit: "token"` when the value is the token reference rather than a resolved numeric value. The snapshot contains only the current state, not adjustment history.
+
+If the user changes the HTML outside the agent's observable environment, ask the user to return the displayed snapshot; do not infer runtime state from the original file or accept a prose approximation when exact values are required. Before approval or translation into `DESIGN.md`, parse the returned snapshot and recheck it against the current comparison sheet's immutable candidate and control definitions. For every adjustment, verify version `1`, exact candidate and control IDs, adjustment scope, unit, and responsive scope. For `project-token`, verify that the exact token exists and is allowed by the control. For `approved-range`, verify a finite numeric value, minimum, maximum, step alignment, and initial value against the declared range. Native input constraints improve interaction but are not sufficient validation for returned text. A missing snapshot is `Not checked`; a malformed or inconsistent snapshot is `Fail` and must be corrected before approval.
+
+Treat every working adjustment as **Proposed**. Candidate selection and a snapshot do not approve each other. Record explicit approval of the selected candidate, current snapshot, and final combined context before translating the values into `DESIGN.md`. Remove the tuning panel, baseline toggle, presets, snapshot output, and rejected values from the accepted visual reference; retain only the approved visual result and implementation relationships.
+
 ## Candidate requirements
 
 For each applicable Standard category, show exactly five candidates. Show exactly five palettes. Keep representative content, viewport, and state constant within a category so the visual decision is observable.
@@ -118,6 +176,8 @@ Give every option a short stable label such as `TYPE-A`, `SURFACE-B`, `CONTROL-C
 ## Selection and coherence pass
 
 Ask the user to select, combine, or reject the candidates for every applicable category and the palette. Record the selection checkpoint before combining them.
+
+When bounded tuning was used, ask the user to return the displayed current-state snapshot with the candidate selections. Apply only the selected candidate's explicitly approved snapshot to the combined preview. Values used for shared comparison remain Proposed unless the user also approves them for the selected result.
 
 Combine the selections into a representative full page using the same product content at desktop and narrow widths. Include the approved page shell, every required header, footer and sidebar, the primary task, and enough supporting content to judge the balance between chrome and content. Verify that full-width outer regions span the preview while their inner content, gutters, and article measure follow the approved model. Check typography, spacing, surface hierarchy, component emphasis, semantic color pairings, reading path, density, focus, states, and responsive behavior together. If selections conflict, explain the conflict and propose the smallest correction that preserves the user's intent. Obtain approval for that correction.
 
