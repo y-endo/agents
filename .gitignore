@@ -4,3 +4,5 @@
 !.env.example
 .claude/settings.local.json
 src/
+__pycache__/
+*.pyc

@@ -49,6 +49,13 @@ node .agents/skills/figma-codegen/scripts/test-compare-images.mjs
 node .agents/skills/figma-codegen/scripts/test-validate-figma-code-map.mjs
 ```
 
+`impl-explainer`を変更した後は、次の回帰テストを実行する。
+`validate.py`または`build.py`を変更した場合は、完成済みレポートを`--sample <report_dir>`で渡し、検証とビルドの回帰テストも実行する。
+
+```bash
+python -X utf8 .agents/skills/impl-explainer/scripts/test-impl-explainer.py
+```
+
 ## コミット直前の必須確認
 
 すべてのコミットについて、コミットする直前にリポジトリルートから次の2コマンドをこの順序で実行する。

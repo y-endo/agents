@@ -1,0 +1,39 @@
+/* impl-explainer: PC閲覧前提。見た目の揺れを防ぐため、ここ以外で装飾しない。 */
+:root {
+  --md-text-font-family: "Yu Gothic UI", "Hiragino Sans", "Noto Sans JP", "Meiryo", system-ui, sans-serif;
+  --md-code-font-family: "Cascadia Mono", "Consolas", "SFMono-Regular", "Menlo", monospace;
+}
+.md-grid { max-width: 1440px; }
+.md-typeset { font-size: 0.8rem; line-height: 1.75; }
+.md-typeset h2 { margin-top: 2.4em; padding-bottom: 0.25em; border-bottom: 1px solid var(--md-default-fg-color--lightest); }
+.md-typeset h3 { margin-top: 1.8em; }
+
+/* 表: 横いっぱいに使い、ヘッダを目立たせる */
+.md-typeset table:not([class]) { display: table; width: 100%; font-size: 0.75rem; }
+.md-typeset table:not([class]) th { background: var(--md-default-fg-color--lightest); white-space: nowrap; }
+.md-typeset table:not([class]) td { vertical-align: top; }
+
+/* Mermaid: 中央寄せ・枠付き */
+.md-typeset .mermaid {
+  display: flex; justify-content: center;
+  padding: 1rem; margin: 1.2em 0 0.6em;
+  border: 1px solid var(--md-default-fg-color--lightest); border-radius: 6px;
+  background: var(--md-default-bg-color);
+}
+
+/* 確度ラベル */
+.ie-badge {
+  display: inline-block; margin: 0 0.15em; padding: 0 0.5em;
+  border-radius: 999px; font-size: 0.68rem; font-weight: 700; line-height: 1.6;
+  vertical-align: 0.08em; white-space: nowrap; border: 1px solid;
+}
+.ie-ok { color: #0b5c26; background: #e6f4ea; border-color: #1e8e3e; }
+.ie-guess { color: #6a3a00; background: #fff4e5; border-color: #e37400; }
+.ie-unknown { color: #5f6368; background: #f1f3f4; border-color: #9aa0a6; }
+[data-md-color-scheme="slate"] .ie-ok { color: #a8dab5; background: #0d3b1e; }
+[data-md-color-scheme="slate"] .ie-guess { color: #fdd29b; background: #4a2a00; }
+[data-md-color-scheme="slate"] .ie-unknown { color: #dadce0; background: #3c4043; }
+
+/* ソース参照 */
+.md-typeset a.ie-src code, .md-typeset code.ie-src { color: var(--md-accent-fg-color); font-size: 0.72rem; }
+.md-typeset a.ie-src:hover code { text-decoration: underline; }

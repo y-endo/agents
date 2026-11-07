@@ -16,3 +16,7 @@ jobs:
       - run: node .agents/skills/figma-variable-extract/scripts/test-figma-variable-extract.mjs
       - run: node .agents/skills/figma-codegen/scripts/test-compare-images.mjs
       - run: node .agents/skills/figma-codegen/scripts/test-validate-figma-code-map.mjs
+      - uses: actions/setup-python@v6
+        with:
+          python-version: "3.12"
+      - run: python -X utf8 .agents/skills/impl-explainer/scripts/test-impl-explainer.py
