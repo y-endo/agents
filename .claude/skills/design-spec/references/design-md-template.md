@@ -22,6 +22,7 @@ Read this file immediately before creating or revising a design contract. Use th
 - Width model: <affected full-width regions, max-width regions, gutters, and article measure, or not affected>
 - Visual reference: <project-approved relative path, scoped reference to establish for a visual Quick change, or not required for non-visual Quick work>
 - Candidate selection approval: <selected option IDs and approval evidence or not required>
+- Tuning snapshot approval: <approved candidate IDs, current-state values, units, responsive scope, and approval evidence, or not used>
 - Final combined-context approval: <approval evidence or not required>
 - Blocking Unresolved: <none or concise list>
 
@@ -43,6 +44,7 @@ Read this file immediately before creating or revising a design contract. Use th
 | Check | Result | Evidence or limitation |
 |---|---|---|
 | <required check> | <Pass, Fail, or Not checked> | <source> |
+| Interactive tuning | <Pass, Fail, or Not checked> | <approved current snapshot or not used> |
 | Final combined-context approval | <Pass, Fail, or Not checked> | <approval evidence for a visual Quick change> |
 ```
 
@@ -67,8 +69,9 @@ Do not add product-wide discovery, references, foundations, or a full component 
 - Shell components: <required or omitted header, footer, and sidebar with product reasons>
 - Visual reference: <project-approved relative path or blocking Unresolved>
 - Candidate selection approval: <selected option IDs and approval evidence>
+- Tuning snapshot approval: <approved candidate IDs, current-state values, units, responsive scope, and approval evidence, or not used>
 - Final full-page atmosphere approval: <desktop and narrow approval evidence>
-- Calibration evidence: <five layout IDs; five IDs for each required shell component and applicable category; five palette IDs; selections, palette interaction check, coherence approvals>
+- Calibration evidence: <five layout IDs; five IDs for each required shell component and applicable category; five palette IDs; selections, palette interaction check, bounded tuning control sources and current-state snapshot when used, coherence approvals>
 - Approval authority: <project authority, stakeholder, or delegated scope>
 - Blocking Unresolved: <none or concise list>
 - Checks: <Pass, Fail, and Not checked summary>
@@ -81,7 +84,7 @@ Do not add product-wide discovery, references, foundations, or a full component 
 
 ### Visual system
 
-<link to the accepted visual reference and require its visible backlink to this file; project-native tokens, typography roles, color pairings, spacing, shape, surface, imagery, icon, and motion rules that implementation needs>
+<link to the accepted visual reference and require its visible backlink to this file; project-native tokens, approved current tuning values, typography roles, color pairings, spacing, shape, surface, imagery, icon, and motion rules that implementation needs>
 
 ### Components, content, and states
 
@@ -135,6 +138,7 @@ For each Target, include the post-approval fidelity brief:
 | Text conformance | <scope-specific criteria> | <Pass, Fail, or Not checked> | <source> |
 | Rendered conformance | <scope-specific criteria> | <Pass, Fail, or Not checked> | <source> |
 | Accepted visual reference | <selected component relationships and palette are represented> | <Pass, Fail, or Not checked> | <source> |
+| Interactive tuning | <approved current snapshot matches desktop and narrow previews, or not used> | <Pass, Fail, or Not checked> | <source> |
 | Target fidelity | <scope-specific criteria or not applicable> | <Pass, Fail, or Not checked> | <source> |
 
 ## Unresolved
@@ -152,6 +156,7 @@ For each Target, include the post-approval fidelity brief:
 - Describe relationships and consequences, not only token values or library names.
 - Use representative real content when approving hierarchy and typography.
 - Record only material decisions. Omit routine values that follow an approved token or component rule.
+- When bounded tuning was used, record only the approved current snapshot and resulting relationships. Values required to reproduce that approved snapshot are material even when they select an existing token, so do not omit them as routine values. Do not retain baseline values, intermediate adjustments, presets, rejected settings, or unchanged routine values outside the snapshot.
 - Express a still-relevant rejected treatment as a current prohibited substitution without preserving its history.
 - Use `Default` only for reversible low-risk choices that do not establish visual character.
 - Keep or return the document to `Draft` if a blocking Unresolved item or required-check `Fail` remains. A `Not checked` result also blocks readiness when its evidence is required to implement without guessing or support a claimed conformance result.
