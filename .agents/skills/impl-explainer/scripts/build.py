@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """impl-explainer: run the format check, then build HTML with MkDocs Material (pinned dependencies).
 
-Usage: python -X utf8 build.py <report_dir>
+Usage: python3 -B -X utf8 build.py <report_dir>
 
 MkDocs is never installed globally. With uv: `uv run` with the pinned lock (uv's own cache).
 Without uv: a venv with the pinned lock is created once, in the user cache dir or, if that is not

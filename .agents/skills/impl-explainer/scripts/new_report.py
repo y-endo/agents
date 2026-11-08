@@ -2,9 +2,9 @@
 """impl-explainer: scaffold a report and write git facts (commits, changed files, diff stats) into it.
 
 Usage:
-  python -X utf8 new_report.py --repo <repo_root> --slug <name> (--hypothesis FILE | --no-hypothesis)
-                               [--base REF] [--head REF] [--uncommitted]
-                               [--editor vscode|cursor|jetbrains|none] [--title TITLE] [--force]
+  python3 -B -X utf8 new_report.py --repo <repo_root> --slug <name> (--hypothesis FILE | --no-hypothesis)
+                                    [--base REF] [--head REF] [--uncommitted]
+                                    [--editor vscode|cursor|jetbrains|none] [--title TITLE] [--force]
 """
 
 from __future__ import annotations

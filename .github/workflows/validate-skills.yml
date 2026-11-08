@@ -19,4 +19,4 @@ jobs:
       - uses: actions/setup-python@v6
         with:
           python-version: "3.12"
-      - run: python -X utf8 .agents/skills/impl-explainer/scripts/test-impl-explainer.py
+      - run: python -B -X utf8 .agents/skills/impl-explainer/scripts/test-impl-explainer.py

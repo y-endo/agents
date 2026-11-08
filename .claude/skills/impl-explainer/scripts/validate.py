@@ -4,7 +4,7 @@
 Does NOT guarantee correctness. Checks only what is mechanical: cited files/lines exist, required
 sections are filled, diagrams are likely to render, code did not change after the report's target point.
 
-Usage: python -X utf8 validate.py <report_dir>     Exit code 1 if any ERROR.
+Usage: python3 -B -X utf8 validate.py <report_dir>     Exit code 1 if any ERROR.
 """
 
 from __future__ import annotations

@@ -3,7 +3,7 @@ name: impl-explainer
 description: Create a Japanese MkDocs Material report that compares an engineer's initial understanding with code evidence. Use when asked to explain AI-written code or report on an uncommitted diff, branch, commit range, or feature. Includes diagrams, code walkthroughs, review findings, operational concerns, questions and comprehension checks. Not for implementing or fixing the target code.
 ---
 
-# impl-explainer
+# Explain an Implementation
 
 Help the engineer explain the change in their own words by comparing their initial understanding with code evidence.
 Identify decisions without a recorded rationale and behavior the tests do not cover.

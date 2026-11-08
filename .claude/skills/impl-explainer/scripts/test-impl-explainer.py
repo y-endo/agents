@@ -2,7 +2,7 @@
 """impl-explainer の回帰テスト（スクリプトを変更したときに実行する）。
 
 使い方:
-  python -X utf8 scripts/test-impl-explainer.py [--sample <完成済みレポートのディレクトリ>] [--no-build] [--env]
+  python3 -B -X utf8 scripts/test-impl-explainer.py [--sample <完成済みレポートのディレクトリ>] [--no-build] [--env]
 
 - git の特殊ケース（空白・日本語のパス、削除、未追跡、ユーザーの git 設定）で new_report.py を検査
 - --sample を渡すと、そのレポートの複製を少しずつ壊して validate.py の各検査が働くかを確認し、
