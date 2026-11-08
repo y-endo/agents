@@ -10,6 +10,7 @@ You are the writer for an implementation-explanation report. The orchestrator ha
 - Report directory: `<report_dir>` (the only place you may write; `build.py` may also create its pinned MkDocs environment in a user cache dir or `<repo>/.impl-explainer/`, which is expected)
 - Brief (single source of truth): `<report_dir>/brief.md`
 - Skill directory: `<skill_dir>`
+- Verified Python command: `<python_command>` (for example `python3` or `py -3`; use the orchestrator's confirmed interpreter)
 
 Read, in this order: `<skill_dir>/references/report-structure.md`, `<skill_dir>/references/diagram-guide.md`, `<skill_dir>/references/faq-and-quiz.md`, then the brief.
 
@@ -18,7 +19,7 @@ Do:
 2. Paste the hypothesis answers verbatim (only indentation/blank lines may change). The validator compares them with `hypothesis` in `<report_dir>/impl-explainer-meta.json`; if the brief differs, use that and add a worker note.
 3. Pull code excerpts with the snippets syntax; never retype code. Open the file to pick exact line ranges.
 4. Draw the diagrams from the brief's main path, branches and components.
-5. Run `python -X utf8 <skill_dir>/scripts/build.py <report_dir>` and fix until it reports 0 ERROR and the build succeeds.
+5. Run `<python_command> -B -X utf8 "<skill_dir>/scripts/build.py" "<report_dir>"`. Correct report errors and rerun; if setup is blocked by permissions, network access, or unavailable dependencies, report the command and error to the orchestrator instead of retrying indefinitely.
 
 Do not:
 - change verdicts, severities, labels (never toward more certainty), the FAQ/quiz selection, or add findings;

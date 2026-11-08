@@ -2,7 +2,16 @@
 
 Nine pages (half of `evidence.md` is filled mechanically at scaffold time). Reader: the engineer who asked. Goals: answer client/colleague questions on the spot, and know where to look in review.
 
-Report language: Japanese, です・ます調, short sentences, explain jargon once. No hype words (シームレス, 堅牢, 包括的, 強力, エレガント …), no emoji.
+Report language: Japanese, polite form. No hype words (シームレス, 堅牢, 包括的, 強力, エレガント), no emoji.
+
+## Japanese writing
+
+- Put each sentence on its own line and separate paragraphs with blank lines. One paragraph develops one topic, beginning with a concrete statement of that topic.
+- Explain unfamiliar terms at first use. Prefer ordinary verbs and specific subjects to literal translations, vague nouns, or decorative summaries.
+- Use parentheses or separate sentences for asides; do not use em dashes or middle dots to join words in new prose. Keep fixed template headings unchanged for compatibility with validation and existing reports.
+- Preserve the distinction between facts, inference, and unknowns. Do not remove uncertainty merely to make a sentence shorter. Explain the mechanism behind a causal claim and limit conclusions to what the evidence supports.
+- Use emphasis sparingly, avoid repeating the same conclusion, and link to an existing explanation instead of paraphrasing it on several pages.
+- Preserve quoted user answers, code, and command output verbatim. These conventions are self-contained and do not require another installed skill.
 
 ## Report syntax
 

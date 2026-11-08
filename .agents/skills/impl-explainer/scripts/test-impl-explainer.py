@@ -204,6 +204,9 @@ def validate_cases(sample: Path, tmp: Path, build: bool) -> None:
     for name, page, fn in ok_cases:
         d = fresh(name.replace(" ", "_"))
         mutate(d, page, fn)
+        if name == "decorated skip declaration":
+            # A skip declaration is valid only when the user supplied no hypothesis.
+            set_meta(d, hypothesis=None)
         out = validate(d)
         check(f"accepts: {name}", "ERROR 0" in out, out[-400:])
 

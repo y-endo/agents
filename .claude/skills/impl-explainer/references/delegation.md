@@ -15,11 +15,10 @@ Why: understanding and judging is input-heavy and decides quality; writing ~15�
 
 ## How to spawn
 
-- **Claude Code**: Agent tool, `model: "sonnet"`, general-purpose type. It starts with a fresh context; wait for it to finish.
-- **Codex**: a sub-agent without forked history, selecting the workhorse model if the tool allows. Otherwise a separate process:
-  `codex exec -m <workhorse-model> -s workspace-write -C <repo_root> - < <report_dir>/worker-prompt.txt`
-- **CLI fallback**: in Claude Code `claude -p --model sonnet "<prompt>"`; in Codex the `codex exec` line above.
-- The worker needs: read access to the repo and skill, write access to `<report_dir>` only (plus the pinned MkDocs environment `build.py` creates in a user cache dir or `<repo>/.impl-explainer/`), and permission to run `python` (and `uv` if installed). The first build also needs internet to fetch pinned MkDocs. You (the orchestrator) write the prompt from `references/worker-prompt.md` with its placeholders filled (save it as `<report_dir>/worker-prompt.txt` when using a CLI).
+- Use the current harness's agent tool with a fresh context and an available workhorse model. Inspect its schema and model list; do not assume model IDs or parameters from another installation.
+- Prefer the built-in tool. Use a separate CLI only when permitted, installed, and its local help confirms the invocation. Shell redirection differs between PowerShell and POSIX shells; quote paths and use the installed shell's syntax.
+- If delegation is unavailable or prohibited, write the pages yourself and record the limitation. Do not use a separate process to bypass a tool or permission restriction.
+- The worker needs read access to the repo and skill, write access to `<report_dir>` (plus the build cache), and the verified Python interpreter from SKILL.md. The first build also needs permission to fetch pinned dependencies. Fill `references/worker-prompt.md` with the actual paths and interpreter.
 - If the worker cannot run the build (sandbox or network limits), it reports that; you run `build.py` yourself and send it the errors.
 
 ## Brief contract
@@ -30,7 +29,7 @@ The worker MUST NOT: change verdicts, severities, the FAQ/quiz selection or labe
 
 ## Review (Phase 4 checklist)
 
-1. Re-run `python -X utf8 <skill>/scripts/validate.py <report_dir>`: 0 ERROR.
+1. Re-run `python3 -B -X utf8 "<skill>/scripts/validate.py" "<report_dir>"` with the verified interpreter: 0 ERROR.
 2. Resolve every item in `## Worker notes` (accept with evidence, or reject).
 3. **Open the cited lines yourself** for: every row of the hypothesis table, the top-3 cautions, every `高` finding, every FAQ `即答`, every failure/state statement in `flow.md`, and every 差分の外への影響 item (open the unchanged line and confirm its meaning really changes). The line must support the claim, not merely exist.
 4. Money, rounding, dates and boundaries: check every such explanation against an actual run at a boundary value (e.g. `round` in Python is banker's rounding, not 四捨五入). Spot-check 5 other citations at random.

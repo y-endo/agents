@@ -34,14 +34,17 @@ Figma関連Skillと`impl-explainer`を変更した後は、対応する回帰テ
 node .agents/skills/figma-variable-extract/scripts/test-figma-variable-extract.mjs
 node .agents/skills/figma-codegen/scripts/test-compare-images.mjs
 node .agents/skills/figma-codegen/scripts/test-validate-figma-code-map.mjs
-python -X utf8 .agents/skills/impl-explainer/scripts/test-impl-explainer.py
+python3 -B -X utf8 .agents/skills/impl-explainer/scripts/test-impl-explainer.py
 ```
 
 `impl-explainer`の`validate.py`や`build.py`を変更した場合は、完成済みレポートを渡して検証とビルドまで確認します。
 
 ```bash
-python -X utf8 .agents/skills/impl-explainer/scripts/test-impl-explainer.py --sample <完成済みレポートのディレクトリ>
+python3 -B -X utf8 .agents/skills/impl-explainer/scripts/test-impl-explainer.py --sample "<完成済みレポートのディレクトリ>"
 ```
+
+Python 3.10以上を使います。Windowsでは、確認済みの`py -3`または`python`に置き換えてください。
+`-B`は、配布対象のスキルに`__pycache__`を残さないために指定しています。
 
 GitHub Actionsでは、Codex用とClaude Code用の同期差分と回帰テストを検証します。
 

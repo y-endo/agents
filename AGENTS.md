@@ -53,8 +53,10 @@ node .agents/skills/figma-codegen/scripts/test-validate-figma-code-map.mjs
 `validate.py`または`build.py`を変更した場合は、完成済みレポートを`--sample <report_dir>`で渡し、検証とビルドの回帰テストも実行する。
 
 ```bash
-python -X utf8 .agents/skills/impl-explainer/scripts/test-impl-explainer.py
+python3 -B -X utf8 .agents/skills/impl-explainer/scripts/test-impl-explainer.py
 ```
+
+Python 3.10以上を使う。Windowsでは、確認済みの`py -3`または`python`に置き換える。
 
 ## コミット直前の必須確認
 

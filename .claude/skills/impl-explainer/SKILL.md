@@ -1,11 +1,12 @@
 ---
 name: impl-explainer
-description: Generate a Japanese HTML report (MkDocs Material) that lets an engineer quickly understand code an AI agent implemented (uncommitted diff, branch, commit range, or a feature) well enough to answer client and colleague questions on the spot. First interviews the engineer for their own hypothesis, then checks it against code facts (file:line evidence, commands run and their output), and produces flow/design diagrams, a code walkthrough, suspicious code and over-engineering, operational concerns, a curated FAQ, and a comprehension quiz. The requesting model supervises and judges; the page writing is delegated to a workhorse model. Use for "explain this implementation", "help me understand the AI-written code", "make a report of this change/diff", "実装を解説して", "impl-explainer".
+description: Create a Japanese MkDocs Material report that compares an engineer's initial understanding with code evidence. Use when asked to explain AI-written code or report on an uncommitted diff, branch, commit range, or feature. Includes diagrams, code walkthroughs, review findings, operational concerns, questions and comprehension checks. Not for implementing or fixing the target code.
 ---
 
 # impl-explainer
 
-Goal: the engineer can explain the change **in their own words**. Not "read the AI's summary", but "test your own hypothesis against code facts, and know what nobody decided and what the tests do not prove".
+Help the engineer explain the change in their own words by comparing their initial understanding with code evidence.
+Identify decisions without a recorded rationale and behavior the tests do not cover.
 
 Works in Claude Code and Codex. "Ask the user" = use a question tool if available, otherwise ask in chat and wait.
 The report is written in **Japanese** (templates, headings and labels are Japanese). Talk to the user in their language.
@@ -18,7 +19,7 @@ The report is written in **Japanese** (templates, headings and labels are Japane
 4. **A green test proves only what it checks.** Record commands and output verbatim in evidence; state what they do not prove.
 5. **Distrust your own summary too.** Phase 5 is a fresh-context verification.
 6. **No filler.** Empty item → one line `該当なし`. No padding findings, questions or diagrams.
-7. **Never modify the working tree** (`git checkout` / `stash` / `reset`, reverting files). The user's uncommitted work would be lost.
+7. **Preserve the target repository.** Do not edit source files, switch branches, stash, reset, or revert the user's work. Generated reports and their local caches belong under `.impl-explainer/`; build environments may also use the user cache when permitted.
 
 ## Roles
 
@@ -36,7 +37,23 @@ P3 brief → worker writes pages & builds                          (worker)
 P4 review, ≤2 fix rounds → P5 fresh-context verification → P6 hand-off   (orchestrator)
 ```
 
-Scripts are in `scripts/` next to this file (`<skill>` below): Python ≥3.10 stdlib only, run as `python -X utf8`. `build.py` prepares pinned MkDocs itself (uv if present, otherwise a venv; first run needs internet). Script messages say what to do on errors.
+## Runtime and writing conventions
+
+Scripts are in `scripts/` next to this file (`<skill>` below).
+Check Git and Python before starting; Python 3.10 or newer is required.
+On macOS/Linux, check `python3 --version`; on Windows, check `py -3 --version` or `python --version`.
+Use the verified interpreter consistently. Examples below use `python3`; replace it with `py -3` or the verified executable when needed.
+Quote paths, including placeholders, because repository and skill paths may contain spaces.
+
+The scripts use the Python standard library. `build.py` prepares the dependencies in `assets/requirements.lock` using uv when available, otherwise a venv.
+The first build needs internet access. Respect sandbox and network permissions; report blocked setup rather than bypassing restrictions.
+Use `-B` so Python does not leave `__pycache__` in the distributed skill directory.
+
+Write Japanese instructions in plain form and reports in polite form.
+Use one sentence per line and one topic per paragraph; explain unfamiliar terms when introduced.
+Avoid decorative emphasis, vague summaries, em dashes, and middle dots used to join words in new prose.
+Preserve uncertainty, quoted answers, code, logs, and fixed template headings.
+The report-specific conventions are in [references/report-structure.md](references/report-structure.md); no separately installed writing skill is required.
 
 ## Phase 0: hypothesis interview (always first)
 
@@ -45,7 +62,7 @@ Follow `references/hypothesis-interview.md`: one message with six questions ("do
 ## Phase 1: scaffold and facts
 
 ```bash
-python -X utf8 <skill>/scripts/new_report.py --repo <repo_root> --slug <name> --hypothesis <answers_file> [--base <ref>] [--head <ref>] [--uncommitted]
+python3 -B -X utf8 "<skill>/scripts/new_report.py" --repo "<repo_root>" --slug <name> --hypothesis "<answers_file>" [--base <ref>] [--head <ref>] [--uncommitted]
 ```
 
 - `<answers_file>`: the user's Phase 0 reply saved verbatim to a file outside the repo or under `<repo>/.impl-explainer/` (excluded from the diff); `validate.py` checks it is pasted unchanged. Use `--no-hypothesis` instead only if the user declined, or answered "don't know/none" to all of Q3–Q5.
@@ -80,7 +97,10 @@ Spawn a verifier with only the repo and report paths (not your conclusions), usi
 
 ## Phase 6: hand-off
 
-Run `python -X utf8 <skill>/scripts/build.py <report_dir>` (validate + build) a final time; ERROR must be 0. If you can drive a browser, screenshot the diagram pages (index/flow/design) to confirm Mermaid rendered (Material draws into a closed shadow DOM; JS cannot check it). If the browser cannot open `file://`, serve it: `python -m http.server 8000 --directory <report_dir>/site`. Tell the user, briefly:
+Run `python3 -B -X utf8 "<skill>/scripts/build.py" "<report_dir>"` (validate + build) a final time; ERROR must be 0.
+If you can drive a browser, inspect and screenshot the diagram pages (index/flow/design) to confirm Mermaid rendered; a successful build alone does not prove rendering.
+If the browser cannot open `file://`, serve it locally with `python3 -m http.server 8000 --bind 127.0.0.1 --directory "<report_dir>/site"` and stop the server after checking.
+Tell the user, briefly:
 
 1. Absolute path to `site/index.html` (open directly; diagrams need internet).
 2. Hypothesis result (counts and the biggest mismatch).

@@ -74,7 +74,7 @@ def main() -> int:
     if not (report_dir / "mkdocs.yml").exists():
         sys.exit(f"ERROR: {report_dir / 'mkdocs.yml'} not found.")
 
-    if subprocess.run([sys.executable, "-X", "utf8", str(SKILL_DIR / "scripts" / "validate.py"), str(report_dir)]).returncode:
+    if subprocess.run([sys.executable, "-B", "-X", "utf8", str(SKILL_DIR / "scripts" / "validate.py"), str(report_dir)]).returncode:
         print("\nNot building: the format check has ERRORs. Fix them and rerun.")
         return 1
 
